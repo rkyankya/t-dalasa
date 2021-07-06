@@ -62,6 +62,11 @@ gem 'bootstrap4-kaminari-views', '= 1.0.0', github: 'mahesh-krishnakumar/bootstr
 gem 'rack-throttle', '~> 0.7' # API Rate limiting
 gem 'webpush', '~> 1.1.0' # Encryption Utilities for Web Push protocol
 
+# Custom Gems
+gem 'better_errors'
+gem "passenger"
+gem 'hirb'
+
 # Omniauth providers
 gem 'omniauth-google-oauth2', '~> 0.6' # Oauth2 strategy for Google
 gem 'omniauth-facebook', '~> 8.0' # Facebook OAuth2 Strategy for OmniAuth http://mkdynamic.github.com/omniauth-facebook
