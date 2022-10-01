@@ -5,6 +5,20 @@ Rails.application.routes.draw do
     mount GraphiQL::Rails::Engine, at: '/graphiql', graphql_path: '/graphql'
   end
 
+  direct :rails_public_blob do |blob|
+    if Rails.env.development? || Rails.env.test? || ENV['CLOUDFRONT_HOST'].blank?
+      route =
+        if blob.is_a?(ActiveStorage::Variant) || blob.is_a?(ActiveStorage::VariantWithRecord)
+          :rails_representation
+        else
+          :rails_blob
+        end
+      route_for(route, blob, only_path: true)
+    else
+      Cloudfront::GenerateSignedUrlService.new(blob).generate_url
+    end
+  end
+
   post '/graphql', to: 'graphql#execute'
 
   devise_for :users, only: %i[sessions omniauth_callbacks], controllers: { sessions: 'users/sessions', omniauth_callbacks: 'users/omniauth_callbacks' }
@@ -27,6 +41,8 @@ Rails.application.routes.draw do
 
   post 'users/email_bounce', controller: 'users/postmark_webhook', action: 'email_bounce'
 
+  get 'users/update_email', controller: 'users', action: 'update_email', as: 'update_email'
+
   authenticate :user, ->(u) { AdminUser.where(email: u.email).present? } do
     mount Delayed::Web::Engine, at: '/jobs'
     mount OverrideCsp.new(Flipper::UI.app(Flipper)), at: '/toggle'
@@ -35,19 +51,43 @@ Rails.application.routes.draw do
   mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
 
   resource :applicants, only: [] do
-    get '/:token', action: 'enroll' # TODO: Legacy route - remove after a few weeks.
     get '/:token/enroll', action: 'enroll', as: 'enroll'
   end
 
   resources :notifications, only: %i[show]
 
-  resource :school, only: %i[show update] do
+  resource :school, only: [] do
     get 'customize'
     get 'admins'
     post 'images'
   end
 
   namespace :school, module: 'schools' do
+    [
+      '/',
+      'courses',
+      'courses/new',
+      'courses/:course_id',
+      'courses/:course_id/details',
+      'courses/:course_id/images',
+      'courses/:course_id/actions',
+      'courses/:course_id/cohorts',
+      'courses/:course_id/cohorts/new',
+      'cohorts/:cohort_id/details',
+      'cohorts/:cohort_id/actions',
+      'courses/:course_id/students',
+      'courses/:course_id/students/new',
+      'courses/:course_id/students/import',
+      'students/:student_id/details',
+      'students/:student_id/actions',
+      'courses/:course_id/teams',
+      'courses/:course_id/teams/new',
+      'teams/:team_id/details',
+      'teams/:team_id/actions',
+    ].each do |path|
+      get path, action: 'school_router'
+    end
+
     resources :faculty, only: %i[create update destroy], as: 'coaches', path: 'coaches' do
       collection do
         get '/', action: 'school_index'
@@ -58,18 +98,20 @@ Rails.application.routes.draw do
       resource :content_block, only: %i[create]
     end
 
-    resources :courses, only: %i[index show new] do
+    resources :cohorts, only: [] do
+      member do
+        post 'bulk_import_students'
+      end
+    end
+
+    resources :courses, only: [] do
       member do
         get 'applicants'
-        get 'details'
-        get 'images', action: :details
-        get 'actions', action: :details
         get 'curriculum'
         get 'exports'
         get 'authors'
         get 'certificates'
         post 'certificates', action: 'create_certificate'
-        post 'bulk_import_students'
         get 'evaluation_criteria'
         post 'attach_images'
       end
@@ -99,9 +141,7 @@ Rails.application.routes.draw do
         end
       end
 
-      post 'mark_teams_active'
       get 'students'
-      get 'inactive_students'
       post 'delete_coach_enrollment'
       post 'update_coach_enrollments'
     end
@@ -144,27 +184,8 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :faculty, only: %i[] do
-    collection do
-      get 'filter/:active_tab', to: 'faculty#index'
-      get 'weekly_slots/:token', to: 'faculty#weekly_slots', as: 'weekly_slots'
-      post 'save_weekly_slots/:token', to: 'faculty#save_weekly_slots', as: 'save_weekly_slots'
-      delete 'weekly_slots/:token', to: 'faculty#mark_unavailable', as: 'mark_unavailable'
-      get 'slots_saved/:token', to: 'faculty#slots_saved', as: 'slots_saved'
-    end
-  end
-
   scope 'coaches', controller: 'faculty' do
     get '/', action: 'index', as: 'coaches_index'
-    get '/:id(/:slug)', action: 'show', as: 'coach'
-    get '/filter/:active_tab', action: 'index'
-  end
-
-  scope 'connect_request', controller: 'connect_request', as: 'connect_request' do
-    get ':id/feedback/from_team/:token', action: 'feedback_from_team', as: 'feedback_from_team'
-    get ':id/feedback/from_faculty/:token', action: 'feedback_from_faculty', as: 'feedback_from_faculty'
-    get ':id/join_session(/:token)', action: 'join_session', as: 'join_session'
-    patch ':id/feedback/comment/:token', action: 'comment_submit', as: 'comment_submit'
   end
 
   # Founder show
@@ -177,9 +198,6 @@ Rails.application.routes.draw do
   get 'manifest', to: 'home#manifest'
   get 'offline', to: 'home#offline'
   root 'home#index'
-
-  # TODO: Remove this backwards-compatibility path after Jan 2021.
-  get 'agreements/terms-of-use', to: redirect('/agreements/terms-and-conditions')
 
   get 'agreements/:agreement_type', as: 'agreement', controller: 'home', action: 'agreement'
 

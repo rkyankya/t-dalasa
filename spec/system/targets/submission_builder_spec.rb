@@ -6,6 +6,7 @@ feature 'Submission Builder', js: true do
   include NotificationHelper
 
   let(:course) { create :course }
+  let(:cohort) { create :cohort, course: course }
   let(:grade_labels_for_1) do
     [
       { 'grade' => 1, 'label' => 'Bad' },
@@ -22,8 +23,7 @@ feature 'Submission Builder', js: true do
            grade_labels: grade_labels_for_1
   end
   let!(:level_1) { create :level, :one, course: course }
-  let!(:team) { create :startup, level: level_1 }
-  let!(:student) { team.founders.first }
+  let!(:student) { create :founder, cohort: cohort, level: level_1 }
   let!(:target_group_l1) do
     create :target_group, level: level_1, milestone: true
   end
@@ -45,7 +45,7 @@ feature 'Submission Builder', js: true do
       'This target has no actions. Click submit to complete the target'
     )
 
-    click_button 'Complete'
+    within('div[id="submission-builder"]') { click_button 'Complete' }
 
     expect(page).to have_content('Your submission has been queued for review')
 
@@ -566,6 +566,6 @@ feature 'Submission Builder', js: true do
     last_submission = TimelineEvent.last
     submission_files = last_submission.timeline_event_files
     expect(submission_files.count).to eq(1)
-    expect(submission_files.first.file.blob.content_type).to eq('video/webm')
+    expect(submission_files.first.file.blob.content_type).to eq('audio/webm')
   end
 end

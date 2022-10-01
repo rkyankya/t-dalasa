@@ -19,16 +19,42 @@ class UserMailerPreview < ActionMailer::Preview
     school = School.first
     user = school.users.first
     host = school.domains.primary.fqdn
-    delete_account_url = Rails.application.routes.url_helpers.delete_account_url(token: 'DELETE_ACCOUNT_TOKEN', host: host, protocol: 'https')
+    delete_account_url =
+      Rails.application.routes.url_helpers.delete_account_url(
+        token: 'DELETE_ACCOUNT_TOKEN',
+        host: host,
+        protocol: 'https'
+      )
     UserMailer.delete_account_token(user, delete_account_url)
   end
 
   def confirm_account_deletion
-    UserMailer.confirm_account_deletion('test@xyz.com', School.first)
+    school = School.first
+    user = school.users.first
+    name = user.preferred_name.presence || user.name
+    UserMailer.confirm_account_deletion(name, user.school, school)
   end
 
   def account_deletion_notification
-    UserMailer.account_deletion_notification(User.last, 'https://test.school.com', 24)
+    UserMailer.account_deletion_notification(
+      User.last,
+      'https://test.school.com',
+      24
+    )
+  end
+
+  def update_email_token
+    school = School.first
+    user = school.users.first
+    new_email = Faker::Internet.email
+    update_email_url = Faker::Internet.url
+    UserMailer.update_email_token(user, new_email, update_email_url)
+  end
+
+  def confirm_email_update
+    school = School.first
+    user = school.users.first
+    UserMailer.confirm_email_update(user.name, user.email, user.school)
   end
 
   private

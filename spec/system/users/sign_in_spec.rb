@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 feature 'User signing in by supplying email address', js: true do
+  include HtmlSanitizerSpecHelper
+
   let!(:school) { create :school, :current }
 
   context 'when a user exists' do
@@ -44,7 +46,7 @@ feature 'User signing in by supplying email address', js: true do
         visit new_user_session_path
 
         click_link 'Continue with email'
-        click_link 'Set a New Password'
+        click_link 'Reset Your Password'
         fill_in 'Email', with: user.email
         click_button 'Request password reset'
 
@@ -52,9 +54,15 @@ feature 'User signing in by supplying email address', js: true do
           "We've sent you a link to reset your password"
         )
 
+        open_email(user.email)
+
+        expect(sanitize_html(current_email.body)).to include(
+          'https://test.host/users/reset_password?token='
+        )
+
         click_link 'Sign In'
         click_link 'Continue with email'
-        click_link 'Set a New Password'
+        click_link 'Reset Your Password'
         fill_in 'Email', with: user.email
         click_button 'Request password reset'
 
@@ -66,13 +74,17 @@ feature 'User signing in by supplying email address', js: true do
 
     context 'when user visits the reset password page' do
       let(:password) { Faker::Internet.password }
+      let(:course) { create :course }
+      let(:level) { create :level, :one, course: course }
+      let(:cohort) { create :cohort, course: course }
 
-      before { create :founder, user: user }
+      before { create :student, user: user, cohort: cohort, level: level }
 
       scenario 'allow to change password with a valid token' do
         user.regenerate_reset_password_token
+
         user.update!(reset_password_sent_at: Time.zone.now)
-        visit reset_password_path(token: user.reset_password_token)
+        visit reset_password_path(token: user.original_reset_password_token)
 
         fill_in 'New Password', with: password
         fill_in 'Confirm Password', with: password
@@ -131,7 +143,7 @@ feature 'User signing in by supplying email address', js: true do
       visit new_user_session_path
 
       click_link 'Continue with email'
-      click_link 'Set a New Password'
+      click_link 'Reset Your Password'
       fill_in 'Email', with: 'unregistered@example.org'
       click_button 'Request password reset'
 

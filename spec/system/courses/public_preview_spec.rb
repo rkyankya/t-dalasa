@@ -137,9 +137,28 @@ feature 'Public preview of course curriculum', js: true do
     expect(page).to have_text('You can access the content on')
   end
 
+  context 'when the course has level zero enabled' do
+    let(:level_0) { create :level, :zero, course: public_course_1 }
+    let(:target_group_l0) { create :target_group, level: level_0 }
+
+    before do
+      create :target, target_group: target_group_l0, role: Target::ROLE_TEAM
+    end
+
+    scenario 'user can preview level zero' do
+      visit curriculum_course_path(public_course_1)
+
+      expect(page).to have_button(level_0.name)
+      expect(page).to have_content("L1: #{level_1.name}")
+    end
+  end
+
   context 'when the user is a student in another course' do
-    let(:student) { create :founder }
-    let(:enrolled_course) { student.course }
+    let(:enrolled_course) { create :course, :with_cohort }
+    let(:l_1) { create :level, :one, course: enrolled_course }
+    let(:student) do
+      create :founder, level: l_1, cohort: enrolled_course.cohorts.first
+    end
 
     scenario 'student in one course accesses preview of another course' do
       sign_in_user student.user,

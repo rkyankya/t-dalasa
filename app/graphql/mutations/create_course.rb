@@ -10,7 +10,7 @@ module Mutations
     def resolve(_params)
       notify(
         :success,
-        I18n.t('shared.done_exclamation'),
+        I18n.t('shared.notifications.done_exclamation'),
         I18n.t('mutations.create_course.success_notification')
       )
 
@@ -22,6 +22,16 @@ module Mutations
         course = current_school.courses.create!(course_data)
 
         Courses::DemoContentService.new(course).execute
+
+        default_cohort =
+          Cohort.create!(
+            name: 'Purple (Auto-generated)',
+            description:
+              "Auto generated cohort for active students in #{course.name}",
+            course_id: course.id
+          )
+
+        course.update!(default_cohort_id: default_cohort.id)
 
         course
       end

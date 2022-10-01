@@ -5,36 +5,46 @@ describe CourseExports::PrepareStudentsExportService do
 
   subject { described_class.new(course_export) }
 
-  let(:level_1) { create :level, :one }
-  let(:level_2) { create :level, :two, course: level_1.course }
-  let(:team_1) { create :team, level: level_2, tag_list: ['tag 1', 'tag 2'] }
-  let(:team_2) { create :team, level: level_1 }
-
-  let(:team_3_access_ended) do
-    create :team, level: level_1, access_ends_at: 1.day.ago, tag_list: ['tag 2']
-  end
-
-  let(:team_4_dropped_out) do
-    create :team, level: level_1, dropped_out_at: 1.day.ago, tag_list: ['tag 3']
-  end
+  let!(:course) { create :course }
+  let(:cohort_live) { create :cohort, course: course }
+  let(:cohort_ended) { create :cohort, course: course, ends_at: 1.day.ago }
+  let(:level_1) { create :level, :one, course: course }
+  let(:level_2) { create :level, :two, course: course }
 
   let(:user_1) do
-    create :user, email: 'a@example.com', last_sign_in_at: 2.days.ago
+    create :user, email: 'a@example.com', last_seen_at: 2.days.ago
   end
 
   let(:user_2) { create :user, email: 'b@example.com' }
   let(:user_3) { create :user, email: 'c@example.com' }
   let(:user_4) { create :user, email: 'd@example.com' }
 
-  let(:student_1) { create :student, startup: team_1, user: user_1 }
-  let!(:student_2) { create :student, startup: team_2, user: user_2 }
+  let(:student_1) do
+    create :student,
+           cohort: cohort_live,
+           level: level_2,
+           tag_list: ['tag 1', 'tag 2'],
+           user: user_1
+  end
+  let!(:student_2) do
+    create :student, cohort: cohort_live, level: level_1, user: user_2
+  end
 
   let!(:student_3_access_ended) do
-    create :student, startup: team_3_access_ended, user: user_3
+    create :student,
+           cohort: cohort_ended,
+           user: user_3,
+           level: level_1,
+           tag_list: ['tag 2']
   end
 
   let!(:student_4_dropped_out) do
-    create :student, startup: team_4_dropped_out, user: user_4
+    create :student,
+           level: level_1,
+           cohort: cohort_live,
+           dropped_out_at: 1.day.ago,
+           tag_list: ['tag 3'],
+           user: user_4
   end
 
   let(:target_group_l1_non_milestone) do
@@ -83,8 +93,7 @@ describe CourseExports::PrepareStudentsExportService do
            evaluation_criteria: [evaluation_criterion_1]
   end
 
-  let(:school) { student_1.school }
-  let(:course) { student_1.course }
+  let(:school) { course.school }
   let!(:school_admin) { create :school_admin, school: school }
 
   let(:course_export) do
@@ -109,6 +118,15 @@ describe CourseExports::PrepareStudentsExportService do
     # Second student is still on L1.
     submission = submit_target target_l1_quiz, student_2
     submission.update!(quiz_score: '1/2')
+
+    # Student has an archived submission - data should not be present in the export
+    create :timeline_event,
+           :with_owners,
+           latest: false,
+           target: target_l1_evaluated,
+           owners: [student_1],
+           created_at: 3.days.ago,
+           archived_at: 1.day.ago
   end
 
   def submission_grading(submission)
@@ -127,8 +145,8 @@ describe CourseExports::PrepareStudentsExportService do
     }
   end
 
-  def last_sign_in_at(student)
-    student.user.last_sign_in_at&.iso8601 || ''
+  def last_seen_at(student)
+    student.user.last_seen_at&.iso8601 || ''
   end
 
   let(:expected_data) do
@@ -187,18 +205,20 @@ describe CourseExports::PrepareStudentsExportService do
         title: 'Students',
         rows: [
           [
-            'ID',
+            'User ID',
+            'Student ID',
             'Email Address',
             'Name',
             'Level',
             'Title',
             'Affiliation',
             'Tags',
-            'Last Sign In At',
+            'Last Seen At',
             'Criterion A (2,3) - Average',
             'Criterion B (2,3) - Average'
           ],
           [
+            student_1.user_id,
             report_link_formula(student_1),
             student_1.email,
             student_1.name,
@@ -206,7 +226,7 @@ describe CourseExports::PrepareStudentsExportService do
             student_1.title,
             student_1.affiliation,
             'tag 1, tag 2',
-            last_sign_in_at(student_1),
+            last_seen_at(student_1),
             student_1_reviewed_submission
               .timeline_event_grades
               .find_by(evaluation_criterion: evaluation_criterion_1)
@@ -221,6 +241,7 @@ describe CourseExports::PrepareStudentsExportService do
               .to_s
           ],
           [
+            student_2.user_id,
             report_link_formula(student_2),
             student_2.email,
             student_2.name,
@@ -228,7 +249,7 @@ describe CourseExports::PrepareStudentsExportService do
             student_2.title,
             student_2.affiliation,
             '',
-            last_sign_in_at(student_2),
+            last_seen_at(student_2),
             student_2_reviewed_submission
               .timeline_event_grades
               .find_by(evaluation_criterion: evaluation_criterion_1)
@@ -281,8 +302,10 @@ describe CourseExports::PrepareStudentsExportService do
   describe '#execute' do
     it 'exports data to an ODS file' do
       expect { subject.execute }.to change {
-        course_export.reload.file.attached?
-      }.from(false).to(true)
+          course_export.reload.file.attached?
+        }
+        .from(false)
+        .to(true)
       expect(course_export.file.filename.to_s).to end_with('.ods')
     end
 
@@ -351,18 +374,20 @@ describe CourseExports::PrepareStudentsExportService do
             title: 'Students',
             rows: [
               [
-                'ID',
+                'User ID',
+                'Student ID',
                 'Email Address',
                 'Name',
                 'Level',
                 'Title',
                 'Affiliation',
                 'Tags',
-                'Last Sign In At',
+                'Last Seen At',
                 'Criterion A (2,3) - Average',
                 'Criterion B (2,3) - Average'
               ],
               [
+                student_1.user_id,
                 report_link_formula(student_1),
                 student_1.email,
                 student_1.name,
@@ -370,7 +395,7 @@ describe CourseExports::PrepareStudentsExportService do
                 student_1.title,
                 student_1.affiliation,
                 'tag 1, tag 2',
-                last_sign_in_at(student_1),
+                last_seen_at(student_1),
                 student_1_reviewed_submission
                   .timeline_event_grades
                   .find_by(evaluation_criterion: evaluation_criterion_1)
@@ -385,6 +410,7 @@ describe CourseExports::PrepareStudentsExportService do
                   .to_s
               ],
               [
+                student_3_access_ended.user_id,
                 report_link_formula(student_3_access_ended),
                 student_3_access_ended.email,
                 student_3_access_ended.name,
@@ -392,11 +418,12 @@ describe CourseExports::PrepareStudentsExportService do
                 student_3_access_ended.title,
                 student_3_access_ended.affiliation,
                 'tag 2',
-                last_sign_in_at(student_3_access_ended),
+                last_seen_at(student_3_access_ended),
                 nil,
                 nil
               ],
               [
+                student_4_dropped_out.user_id,
                 report_link_formula(student_4_dropped_out),
                 student_4_dropped_out.email,
                 student_4_dropped_out.name,
@@ -404,7 +431,7 @@ describe CourseExports::PrepareStudentsExportService do
                 student_4_dropped_out.title,
                 student_4_dropped_out.affiliation,
                 'tag 3',
-                last_sign_in_at(student_4_dropped_out),
+                last_seen_at(student_4_dropped_out),
                 nil,
                 nil
               ]

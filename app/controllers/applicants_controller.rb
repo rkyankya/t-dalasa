@@ -1,15 +1,15 @@
 class ApplicantsController < ApplicationController
   # GET /applicants/:token/enroll
   def enroll
-    @applicant = Applicant.find_by(login_token: params[:token])
+    login_token_digest = Digest::SHA2.base64digest(params[:token])
+    @applicant = Applicant.find_by(login_token_digest: login_token_digest)
 
     if valid_applicant?
       @applicant.update!(email_verified: true)
 
       redirect_to resolve_applicant_path
     else
-      flash[:error] =
-        'That one-time link has expired, or is invalid. If you have already completed enrollment, please sign in.'
+      flash[:error] = t('.link_expired')
       redirect_to new_user_session_path
     end
   end
@@ -23,7 +23,7 @@ class ApplicantsController < ApplicationController
           .new(@applicant)
           .create([session[:applicant_tag] || 'Public Signup'])
       sign_in student.user
-      flash[:success] = "Welcome to #{current_school.name}!"
+      flash[:success] = t('.welcome', school_name: current_school.name)
       after_sign_in_path_for(student.user)
     else
       @applicant
@@ -31,8 +31,8 @@ class ApplicantsController < ApplicationController
         .processing_url
         .gsub('${course_id}', @applicant.course_id.to_s)
         .gsub('${applicant_id}', @applicant.id.to_s)
-        .gsub('${email}', @applicant.email)
-        .gsub('${name}', @applicant.name)
+        .gsub('${email}', ERB::Util.url_encode(@applicant.email))
+        .gsub('${name}', ERB::Util.url_encode(@applicant.name))
     end
   end
 

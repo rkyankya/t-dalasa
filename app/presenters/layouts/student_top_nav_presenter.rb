@@ -21,7 +21,7 @@ module Layouts
       if current_school.blank?
         view.image_url('mailer/pupilfirst-logo.png')
       elsif current_school.logo_on_light_bg.attached?
-        view.url_for(current_school.logo_variant(:high))
+        view.rails_public_blob_url(current_school.logo_variant(:high))
       end
     end
 
@@ -40,7 +40,7 @@ module Layouts
           custom_links =
             SchoolLink
               .where(school: current_school, kind: SchoolLink::KIND_HEADER)
-              .order(created_at: :DESC)
+              .order(:sort_index)
               .map do |school_link|
                 { title: school_link.title, url: school_link.url }
               end
@@ -52,11 +52,18 @@ module Layouts
 
     def admin_link
       if current_school.present? && view.policy(current_school).show?
-        [{ title: 'Admin', url: view.school_path }]
+        [
+          {
+            title:
+              I18n.t('presenters.layouts.students_top_nav.admin_link.title'),
+            url: view.school_path
+          }
+        ]
       elsif current_user.present? && course_authors.any?
         [
           {
-            title: 'Admin',
+            title:
+              I18n.t('presenters.layouts.students_top_nav.admin_link.title'),
             url: view.curriculum_school_course_path(course_authors.first.course)
           }
         ]
@@ -66,7 +73,19 @@ module Layouts
     end
 
     def dashboard_link
-      current_user.present? ? [{ title: 'Dashboard', url: '/dashboard' }] : []
+      if current_user.present?
+        [
+          {
+            title:
+              I18n.t(
+                'presenters.layouts.students_top_nav.dashboard_link.title'
+              ),
+            url: '/dashboard'
+          }
+        ]
+      else
+        []
+      end
     end
 
     def course_authors
@@ -79,14 +98,20 @@ module Layouts
       {
         id: current_user.id,
         name: current_user.name,
-        title: current_user.title,
+        full_title: current_user.full_title,
         avatar_url: current_user.avatar_url(variant: :thumb)
       }
     end
 
     def coaches_link
       if current_school.users.joins(:faculty).exists?(faculty: { public: true })
-        [{ title: 'Coaches', url: '/coaches' }]
+        [
+          {
+            title:
+              I18n.t('presenters.layouts.students_top_nav.coaches_link.title'),
+            url: '/coaches'
+          }
+        ]
       else
         []
       end

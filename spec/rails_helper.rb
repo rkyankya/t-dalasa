@@ -14,6 +14,7 @@ require 'rspec/rails'
 
 require 'webmock/rspec'
 require 'support/flipper'
+require 'support/missing_translations'
 
 # Disable all net connections except ones to localhost, and to locations the webdrivers gem downloads its binaries from.
 WebMock.disable_net_connect!(
@@ -102,6 +103,10 @@ RSpec.configure do |config|
     Capybara.page.driver.browser.manage.window.maximize
   end
 
+  config.after(:each, js: true) do
+    expect(page).not_to have_missing_translations
+  end
+
   # Faker clear store for unique generator after run
   config.before(:each) do
     Faker::UniqueGenerator.clear
@@ -122,7 +127,19 @@ Capybara.register_driver :headless_chrome do |app|
   options.add_argument('use-fake-device-for-media-stream')
   options.headless!
 
-  Capybara::Selenium::Driver.new app, browser: :chrome, options: options
+  Capybara::Selenium::Driver.new app, browser: :chrome, capabilities: [options]
+end
+
+Capybara.register_driver :headless_chrome_codespaces do |app|
+  options = Selenium::WebDriver::Chrome::Options.new
+  options.add_argument('--window-size=1920,1080')
+  options.add_argument("--no-sandbox");
+  options.add_argument("--disable-dev-shm-usage");
+  options.add_argument('use-fake-ui-for-media-stream')
+  options.add_argument('use-fake-device-for-media-stream')
+  options.headless!
+
+  Capybara::Selenium::Driver.new app, browser: :chrome, capabilities: [options]
 end
 
 Capybara.register_driver :firefox do |app|
@@ -133,7 +150,7 @@ Capybara.register_driver :headless_firefox do |app|
   options = Selenium::WebDriver::Firefox::Options.new
   options.headless!
 
-  Capybara::Selenium::Driver.new app, browser: :firefox, options: options
+  Capybara::Selenium::Driver.new app, browser: :firefox, capabilities: [options]
 end
 
 Capybara.javascript_driver =
@@ -183,6 +200,3 @@ Capybara::Screenshot.prune_strategy = { keep: 20 }
     driver.browser.save_screenshot(path)
   end
 end
-
-# Faker should use India as locale.
-Faker::Config.locale = 'en-IND'

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_06_21_101212) do
+ActiveRecord::Schema.define(version: 2022_08_05_063129) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
@@ -52,7 +52,7 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.string "username"
     t.string "fullname"
     t.integer "user_id"
-    t.string "email"
+    t.citext "email"
     t.index ["user_id"], name: "index_admin_users_on_user_id"
   end
 
@@ -66,7 +66,7 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
   end
 
   create_table "applicants", force: :cascade do |t|
-    t.string "email"
+    t.citext "email"
     t.string "name"
     t.string "login_token"
     t.datetime "login_mail_sent_at"
@@ -74,9 +74,11 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "email_verified", default: false
+    t.string "login_token_digest"
     t.index ["course_id"], name: "index_applicants_on_course_id"
     t.index ["email", "course_id"], name: "index_applicants_on_email_and_course_id", unique: true
     t.index ["login_token"], name: "index_applicants_on_login_token", unique: true
+    t.index ["login_token_digest"], name: "index_applicants_on_login_token_digest", unique: true
   end
 
   create_table "audit_records", force: :cascade do |t|
@@ -122,6 +124,16 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.index ["student_id"], name: "index_coach_notes_on_student_id"
   end
 
+  create_table "cohorts", force: :cascade do |t|
+    t.string "name"
+    t.string "description"
+    t.datetime "ends_at"
+    t.bigint "course_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["course_id"], name: "index_cohorts_on_course_id"
+  end
+
   create_table "communities", force: :cascade do |t|
     t.string "name"
     t.boolean "target_linkable", default: false
@@ -136,32 +148,6 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.bigint "course_id"
     t.index ["community_id"], name: "index_community_course_connections_on_community_id"
     t.index ["course_id", "community_id"], name: "index_community_course_connection_on_course_id_and_community_id", unique: true
-  end
-
-  create_table "connect_requests", id: :serial, force: :cascade do |t|
-    t.integer "connect_slot_id"
-    t.integer "startup_id"
-    t.text "questions"
-    t.string "status"
-    t.string "meeting_link"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "confirmed_at"
-    t.datetime "feedback_mails_sent_at"
-    t.integer "rating_for_faculty"
-    t.integer "rating_for_team"
-    t.text "comment_for_faculty"
-    t.text "comment_for_team"
-    t.index ["connect_slot_id"], name: "index_connect_requests_on_connect_slot_id"
-    t.index ["startup_id"], name: "index_connect_requests_on_startup_id"
-  end
-
-  create_table "connect_slots", id: :serial, force: :cascade do |t|
-    t.integer "faculty_id"
-    t.datetime "slot_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["faculty_id"], name: "index_connect_slots_on_faculty_id"
   end
 
   create_table "content_blocks", force: :cascade do |t|
@@ -216,6 +202,8 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.boolean "public_preview", default: false
     t.string "processing_url"
     t.jsonb "highlights", default: []
+    t.bigint "default_cohort_id"
+    t.index ["default_cohort_id"], name: "index_courses_on_default_cohort_id"
     t.index ["school_id"], name: "index_courses_on_school_id"
   end
 
@@ -280,6 +268,15 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.index ["user_id"], name: "index_faculty_on_user_id"
   end
 
+  create_table "faculty_cohort_enrollments", force: :cascade do |t|
+    t.bigint "faculty_id"
+    t.bigint "cohort_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["cohort_id", "faculty_id"], name: "index_faculty_cohort_enrollments_on_cohort_id_and_faculty_id", unique: true
+    t.index ["faculty_id"], name: "index_faculty_cohort_enrollments_on_faculty_id"
+  end
+
   create_table "faculty_course_enrollments", force: :cascade do |t|
     t.bigint "faculty_id"
     t.bigint "course_id"
@@ -287,6 +284,15 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.datetime "updated_at", null: false
     t.index ["course_id", "faculty_id"], name: "index_faculty_course_enrollments_on_course_id_and_faculty_id", unique: true
     t.index ["faculty_id"], name: "index_faculty_course_enrollments_on_faculty_id"
+  end
+
+  create_table "faculty_founder_enrollments", force: :cascade do |t|
+    t.bigint "faculty_id"
+    t.bigint "founder_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["faculty_id"], name: "index_faculty_founder_enrollments_on_faculty_id"
+    t.index ["founder_id", "faculty_id"], name: "index_faculty_founder_enrollments_on_founder_id_and_faculty_id", unique: true
   end
 
   create_table "faculty_startup_enrollments", force: :cascade do |t|
@@ -332,8 +338,14 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.integer "user_id"
     t.boolean "dashboard_toured"
     t.integer "resume_file_id"
-    t.string "slack_access_token"
     t.boolean "excluded_from_leaderboard", default: false
+    t.datetime "dropped_out_at"
+    t.bigint "cohort_id"
+    t.bigint "level_id"
+    t.bigint "team_id"
+    t.index ["cohort_id"], name: "index_founders_on_cohort_id"
+    t.index ["level_id"], name: "index_founders_on_level_id"
+    t.index ["team_id"], name: "index_founders_on_team_id"
     t.index ["user_id"], name: "index_founders_on_user_id"
   end
 
@@ -490,6 +502,7 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.string "kind"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "sort_index", default: 0, null: false
     t.index ["school_id", "kind"], name: "index_school_links_on_school_id_and_kind"
   end
 
@@ -515,7 +528,6 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.string "reference_url"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "startup_id"
     t.datetime "sent_at"
     t.integer "faculty_id"
     t.string "activity_type"
@@ -533,6 +545,18 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.datetime "access_ends_at"
     t.datetime "dropped_out_at"
     t.index ["level_id"], name: "index_startups_on_level_id"
+  end
+
+  create_table "submission_reports", force: :cascade do |t|
+    t.string "status"
+    t.string "conclusion"
+    t.datetime "started_at"
+    t.datetime "completed_at"
+    t.bigint "submission_id"
+    t.text "test_report"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["submission_id"], name: "index_submission_reports_on_submission_id"
   end
 
   create_table "taggings", id: :serial, force: :cascade do |t|
@@ -629,6 +653,14 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.index ["session_at"], name: "index_targets_on_session_at"
   end
 
+  create_table "teams", force: :cascade do |t|
+    t.string "name"
+    t.bigint "cohort_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["cohort_id"], name: "index_teams_on_cohort_id"
+  end
+
   create_table "text_versions", force: :cascade do |t|
     t.text "value"
     t.string "versionable_type"
@@ -680,6 +712,10 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.string "quiz_score"
     t.datetime "evaluated_at"
     t.jsonb "checklist", default: []
+    t.bigint "reviewer_id"
+    t.datetime "reviewer_assigned_at"
+    t.datetime "archived_at"
+    t.index ["reviewer_id"], name: "index_timeline_events_on_reviewer_id"
   end
 
   create_table "topic_categories", force: :cascade do |t|
@@ -717,7 +753,7 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
   end
 
   create_table "users", id: :serial, force: :cascade do |t|
-    t.string "email"
+    t.citext "email"
     t.string "login_token"
     t.datetime "remember_created_at"
     t.integer "sign_in_count", default: 0
@@ -729,7 +765,7 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.string "remember_token"
     t.boolean "sign_out_at_next_request"
     t.datetime "confirmed_at"
-    t.datetime "login_mail_sent_at"
+    t.datetime "login_token_generated_at"
     t.string "name"
     t.string "title"
     t.text "about"
@@ -740,16 +776,23 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
     t.string "affiliation"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "time_zone", default: "Asia/Kolkata", null: false
-    t.string "delete_account_token"
+    t.string "time_zone", default: "Africa/Nairobi", null: false
+    t.string "delete_account_token_digest"
     t.datetime "delete_account_sent_at"
     t.datetime "account_deletion_notification_sent_at"
     t.string "api_token_digest"
     t.string "locale", default: "en"
     t.jsonb "webpush_subscription", default: {}
+    t.string "login_token_digest"
+    t.datetime "last_seen_at"
+    t.string "preferred_name"
+    t.string "update_email_token"
+    t.datetime "update_email_token_sent_at"
+    t.string "new_email"
     t.index ["api_token_digest"], name: "index_users_on_api_token_digest", unique: true
-    t.index ["delete_account_token"], name: "index_users_on_delete_account_token", unique: true
+    t.index ["delete_account_token_digest"], name: "index_users_on_delete_account_token_digest", unique: true
     t.index ["email", "school_id"], name: "index_users_on_email_and_school_id", unique: true
+    t.index ["login_token_digest"], name: "index_users_on_login_token_digest", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["school_id"], name: "index_users_on_school_id"
   end
@@ -784,22 +827,28 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
   add_foreign_key "answer_options", "quiz_questions"
   add_foreign_key "applicants", "courses"
   add_foreign_key "certificates", "courses"
+  add_foreign_key "cohorts", "courses"
   add_foreign_key "communities", "schools"
   add_foreign_key "community_course_connections", "communities"
   add_foreign_key "community_course_connections", "courses"
-  add_foreign_key "connect_requests", "connect_slots"
-  add_foreign_key "connect_requests", "startups"
-  add_foreign_key "connect_slots", "faculty"
   add_foreign_key "course_authors", "courses"
   add_foreign_key "course_authors", "users"
   add_foreign_key "course_exports", "courses"
   add_foreign_key "course_exports", "users"
+  add_foreign_key "courses", "cohorts", column: "default_cohort_id"
   add_foreign_key "courses", "schools"
   add_foreign_key "domains", "schools"
+  add_foreign_key "faculty_cohort_enrollments", "cohorts"
+  add_foreign_key "faculty_cohort_enrollments", "faculty"
   add_foreign_key "faculty_course_enrollments", "courses"
   add_foreign_key "faculty_course_enrollments", "faculty"
+  add_foreign_key "faculty_founder_enrollments", "faculty"
+  add_foreign_key "faculty_founder_enrollments", "founders"
   add_foreign_key "faculty_startup_enrollments", "faculty"
   add_foreign_key "faculty_startup_enrollments", "startups"
+  add_foreign_key "founders", "cohorts"
+  add_foreign_key "founders", "levels"
+  add_foreign_key "founders", "teams"
   add_foreign_key "founders", "users"
   add_foreign_key "issued_certificates", "certificates"
   add_foreign_key "issued_certificates", "users"
@@ -820,12 +869,15 @@ ActiveRecord::Schema.define(version: 2021_06_21_101212) do
   add_foreign_key "startup_feedback", "faculty"
   add_foreign_key "startup_feedback", "timeline_events"
   add_foreign_key "startups", "levels"
+  add_foreign_key "submission_reports", "timeline_events", column: "submission_id"
   add_foreign_key "target_evaluation_criteria", "evaluation_criteria"
   add_foreign_key "target_evaluation_criteria", "targets"
   add_foreign_key "target_groups", "levels"
   add_foreign_key "target_versions", "targets"
+  add_foreign_key "teams", "cohorts"
   add_foreign_key "timeline_event_files", "timeline_events"
   add_foreign_key "timeline_events", "faculty", column: "evaluator_id"
+  add_foreign_key "timeline_events", "faculty", column: "reviewer_id"
   add_foreign_key "topic_categories", "communities"
   add_foreign_key "topics", "communities"
   add_foreign_key "topics", "topic_categories"

@@ -1,9 +1,6 @@
 require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
-  # Verifies that versions and hashed value of the package contents in the project's package.json
-  config.webpacker.check_yarn_integrity = false
-
   # Settings specified here will take precedence over those in config/application.rb.
 
   # In the development environment your application's code is reloaded on
@@ -42,6 +39,10 @@ Rails.application.configure do
 
   config.action_mailer.delivery_method = :letter_opener
 
+  # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
+  # the I18n.default_locale when a translation cannot be found).
+  config.i18n.fallbacks = true
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
@@ -68,6 +69,12 @@ Rails.application.configure do
   # Raises error for missing translations
   # config.i18n.raise_on_missing_translations = true
 
+  config.after_initialize do
+    require 'i18n-js/listen'
+
+    I18nJS.listen
+  end
+
   # Annotate rendered view with file names.
   # config.action_view.annotate_rendered_view_with_filenames = true
 
@@ -84,6 +91,9 @@ Rails.application.configure do
   Bullet.rails_logger = true
   Bullet.skip_html_injection = true
 
-  # In development , let's have ActiveStorage store everything on local disk
+  # In development, let's have ActiveStorage store everything on local disk
   config.active_storage.service = :local
+
+  # In development, let's disable host-based blocking.
+  config.hosts.clear
 end

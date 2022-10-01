@@ -5,18 +5,22 @@ feature 'Community', js: true do
   include NotificationHelper
   include MarkdownEditorHelper
   include ActiveSupport::Testing::TimeHelpers
+  include HtmlSanitizerSpecHelper
 
   # Setup a course with students and target for community.
   let(:school) { create :school, :current }
-  let(:course) { create :course, school: school }
+  let(:course) { create :course, :with_cohort, school: school }
   let(:level_1) { create :level, :one, course: course }
   let(:level_1_c2) { create :level, :one, course: course_2 }
   let(:target_group) { create :target_group, level: level_1 }
   let!(:target) { create :target, target_group: target_group }
   let!(:community) { create :community, school: school, target_linkable: true }
-  let(:team) { create :team, level: level_1 }
-  let(:student_1) { create :student, startup: team }
-  let(:student_2) { create :student, startup: team }
+  let(:student_1) do
+    create :student, level: level_1, cohort: course.cohorts.first
+  end
+  let(:student_2) do
+    create :student, level: level_1, cohort: course.cohorts.first
+  end
   let(:coach) { create :faculty, school: school }
   let!(:topic_1) do
     create :topic,
@@ -49,21 +53,64 @@ feature 'Community', js: true do
   let(:reply_for_topic) { Faker::Lorem.sentence }
   let(:reply_for_another_post) { Faker::Lorem.sentence }
 
-  let(:course_2) { create :course, school: school }
-  let(:team_c2) { create :team, level: level_1_c2 }
-  let(:student_c2) { create :student, startup: team_c2 }
+  let(:course_2) { create :course, :with_cohort, school: school }
 
-  let(:archived_course) do
-    create :course, school: school, archived_at: 1.day.ago
+  let(:student_c2) do
+    create :student, level: level_1_c2, cohort: course_2.cohorts.first
   end
+
+  let(:archived_course) { create :course, :archived, school: school }
   let(:archived_course_level) { create :level, :one, course: archived_course }
-  let(:archived_course_team) { create :team, level: archived_course_level }
   let!(:archived_course_student) do
-    create :student, startup: archived_course_team
+    create :student,
+           level: archived_course_level,
+           cohort: archived_course.cohorts.first
+  end
+
+  shared_examples 'lock and unlock a topic' do
+    scenario 'user can lock and unlock a topic' do
+      sign_in_user(user, referrer: topic_path(topic_1))
+
+      expect(page).to have_text(topic_1.title)
+      expect(page).to_not have_text('This topic thread has been locked')
+
+      accept_confirm { click_button('Lock Topic') }
+
+      expect(page).to have_text('This topic has been locked')
+
+      dismiss_notification
+
+      expect(page).to have_text('This topic thread has been locked')
+      expect(page).to_not have_selector(
+                            "button[aria-label='Add reply to topic']"
+                          )
+      expect(page).to_not have_selector(
+                            "button[aria-label='Add reply to post #{reply_1.id}']"
+                          )
+
+      expect(topic_1.reload.locked_at).to_not eq(nil)
+      expect(topic_1.locked_by).to eq(user)
+
+      accept_confirm { click_button('Unlock Topic') }
+
+      expect(page).to have_text('This topic has been unlocked')
+
+      dismiss_notification
+
+      expect(page).to_not have_text('This topic thread has been locked')
+      expect(page).to have_selector("button[aria-label='Add reply to topic']")
+      expect(page).to have_selector(
+        "button[aria-label='Add reply to post #{reply_1.id}']"
+      )
+      expect(topic_1.reload.locked_at).to eq(nil)
+      expect(topic_1.locked_by).to eq(nil)
+    end
   end
 
   before do
-    create :faculty_course_enrollment, faculty: coach, course: course
+    create :faculty_cohort_enrollment,
+           faculty: coach,
+           cohort: course.cohorts.first
     create :community_course_connection, course: course, community: community
     create :community_course_connection, course: course_2, community: community
     create :community_course_connection,
@@ -186,9 +233,11 @@ feature 'Community', js: true do
     # A notification should have been mailed to the question author.
     open_email(topic_1.creator.email)
     expect(current_email.subject).to eq('New reply for your post')
-    expect(current_email.body).to include(
+
+    expect(sanitize_html(current_email.body)).to include(
       "#{student_2.user.name} has posted a reply to something you said on the #{community.name} community"
     )
+
     expect(current_email.body).to include("/topics/#{topic_1.id}")
 
     expect(page).to have_text('2 Replies')
@@ -246,10 +295,11 @@ feature 'Community', js: true do
     # A mail should have been sent to post author.
     open_email(reply_1.creator.email)
     expect(current_email.subject).to eq('New reply for your post')
-    expect(current_email.body).to include('New reply for your post')
-    expect(current_email.body).to include(
+
+    expect(sanitize_html(current_email.body)).to include(
       "#{student_2.user.name} has posted a reply to something you said on the #{community.name} community"
     )
+
     expect(current_email.body).to include("/topics/#{topic_1.id}")
 
     # check saved reply
@@ -343,6 +393,13 @@ feature 'Community', js: true do
     expect(page).not_to have_text(old_description)
     expect(topic_1.first_post.reload.body).to eq(topic_body_for_edit)
     expect(topic_1.first_post.text_versions.first.value).to eq(old_description)
+
+    visit topic_path(topic_1)
+
+    # should have a "last edited by" marker
+    within("div#post-show-#{topic_1.first_post.id}") do
+      expect(page).to have_text("Last edited by #{coach.user.name}")
+    end
 
     # can see topic edit history
     find("div[aria-label='Options for post #{topic_1.first_post.id}']").click
@@ -446,27 +503,92 @@ feature 'Community', js: true do
     end
   end
 
-  scenario 'user searches for topics in community' do
+  scenario 'user searches for topics in community and apply solved filters' do
     # Let's set the titles for both topics to completely different sentences to avoid confusing the fuzzy search algo.
     topic_1.update!(title: 'Complex sentence with certain words')
     topic_2.update!(title: 'Completely Different Sequence')
     create :post,
-           topic: topic_3,
+           topic: topic_1,
            creator: student_1.user,
-           post_number: 2,
+           post_number: 4,
+           solution: true,
            body: 'Another Complex Sentence'
+    create :post,
+           topic: topic_2,
+           creator: student_1.user,
+           post_number: 3,
+           solution: false,
+           body: 'Completely Different'
 
     sign_in_user(coach.user, referrer: community_path(community))
 
     expect(page).to have_text(topic_2.title)
 
     fill_in 'filter', with: 'complex sentence'
-
-    click_button 'Search: complex sentence'
+    click_button 'Search by title: complex sentence'
 
     expect(page).to_not have_text(topic_2.title)
     expect(page).to have_text(topic_1.title)
-    expect(page).to have_text(topic_3.title)
+
+    find("button[title='Remove selection: complex sentence']").click
+    fill_in 'filter', with: 'Completely Different'
+
+    click_button 'Search by content: Completely Different'
+
+    expect(page).to_not have_text(topic_1.title)
+    expect(page).to have_text(topic_2.title)
+
+    find("button[title='Remove selection: Completely Different']").click
+
+    # Apply solved filter
+    fill_in 'filter', with: 'complex sentence'
+    click_button 'Search by title: complex sentence'
+    fill_in 'filter', with: 'solution'
+
+    click_button 'Solution: Solved'
+
+    expect(page).to_not have_text(topic_2.title)
+    expect(page).to have_text(topic_1.title)
+
+    # Clear the filter
+    find("button[title='Remove selection: Solved']").click
+    find("button[title='Remove selection: complex sentence']").click
+
+    fill_in 'filter', with: 'Completely Different'
+    click_button 'Search by title: Completely Different'
+    fill_in 'filter', with: 'solution'
+
+    click_button 'Solution: Unsolved'
+
+    expect(page).to_not have_text(topic_1.title)
+    expect(page).to have_text(topic_2.title)
+
+    # Clear the filter
+    find("button[title='Remove selection: Unsolved']").click
+    find("button[title='Remove selection: Completely Different']").click
+
+    # Apply unsolved filter
+    fill_in 'filter', with: 'complex sentence'
+    click_button 'Search by content: complex sentence'
+    fill_in 'filter', with: 'solution'
+
+    click_button 'Solution: Solved'
+
+    expect(page).to_not have_text(topic_2.title)
+    expect(page).to have_text(topic_1.title)
+
+    # Clear the filter
+    find("button[title='Remove selection: Solved']").click
+    find("button[title='Remove selection: complex sentence']").click
+
+    fill_in 'filter', with: 'Completely Different'
+    click_button 'Search by content: Completely Different'
+    fill_in 'filter', with: 'solution'
+
+    click_button 'Solution: Unsolved'
+
+    expect(page).to_not have_text(topic_1.title)
+    expect(page).to have_text(topic_2.title)
   end
 
   scenario 'user plays around with subscription' do
@@ -519,7 +641,7 @@ feature 'Community', js: true do
     end
   end
 
-  context 'when a user is a school admin' do
+  context 'when current user is a school admin' do
     let(:school_admin) { create :school_admin }
 
     scenario 'school admin interacts with the community' do
@@ -562,8 +684,11 @@ feature 'Community', js: true do
 
       # Post a reply.
       replace_markdown reply_body
-      expect { click_button 'Post Your Reply' }.to change { Post.count }.by(1)
-      dismiss_notification
+
+      expect {
+        click_button 'Post Your Reply'
+        dismiss_notification
+      }.to change { Post.count }.by(1)
 
       # Create a new topic.
       click_link community.name
@@ -578,53 +703,28 @@ feature 'Community', js: true do
       ).to eq(topic_body)
     end
 
-    scenario 'admin locks/unlocks a topic in community' do
-      sign_in_user(school_admin.user, referrer: topic_path(topic_1))
-
-      expect(page).to have_text(topic_1.title)
-      expect(page).to_not have_text('This topic thread has been locked')
-
-      accept_confirm { click_button('Lock Topic') }
-
-      expect(page).to have_text('This topic has been locked')
-      dismiss_notification
-
-      expect(page).to have_text('This topic thread has been locked')
-
-      expect(topic_1.reload.locked_at).to_not eq(nil)
-      expect(topic_1.locked_by).to eq(school_admin.user)
-
-      accept_confirm { click_button('Unlock Topic') }
-
-      expect(page).to have_text('This topic has been unlocked')
-      dismiss_notification
-
-      expect(page).to_not have_text('This topic thread has been locked')
-
-      expect(topic_1.reload.locked_at).to eq(nil)
-      expect(topic_1.locked_by).to eq(nil)
+    include_examples 'lock and unlock a topic' do
+      let(:user) { school_admin.user }
     end
   end
 
-  scenario 'student attempts to lock a topic' do
-    sign_in_user(student_1.user, referrer: topic_path(topic_1))
+  context 'when current user is a student who created a topic' do
+    let(:user) { student_1.user }
+
+    include_examples 'lock and unlock a topic'
+  end
+
+  context 'when current user is a coach' do
+    let(:user) { coach.user }
+
+    include_examples 'lock and unlock a topic'
+  end
+
+  scenario 'a student other than the topic creator attempts to lock a topic' do
+    sign_in_user(student_2.user, referrer: topic_path(topic_1))
 
     expect(page).to have_text(topic_1.title)
     expect(page).to_not have_button('Lock Topic')
-  end
-
-  scenario 'coach attempts to lock/unlock a topic' do
-    sign_in_user(coach.user, referrer: topic_path(topic_1))
-
-    accept_confirm { click_button('Lock Topic') }
-
-    expect(page).to have_text('This topic has been locked')
-    dismiss_notification
-
-    accept_confirm { click_button('Unlock Topic') }
-
-    expect(page).to have_text('This topic has been unlocked')
-    dismiss_notification
   end
 
   scenario 'student attempts to post reply to a locked topic' do
@@ -947,6 +1047,16 @@ feature 'Community', js: true do
           "div[aria-label='Marked as solution icon']"
         )
       end
+    end
+  end
+
+  context 'when a coach is marked inactive' do
+    before { coach.update!(exited: true) }
+
+    scenario 'coach loses access to all communities' do
+      sign_in_user(coach.user, referrer: community_path(community))
+
+      expect(page).to have_text("The page you were looking for doesn't exist")
     end
   end
 end

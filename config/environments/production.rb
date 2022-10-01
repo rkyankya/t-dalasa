@@ -1,9 +1,6 @@
 require 'active_support/core_ext/integer/time'
 
 Rails.application.configure do
-  # Verifies that versions and hashed value of the package contents in the project's package.json
-  config.webpacker.check_yarn_integrity = false
-
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -31,10 +28,12 @@ Rails.application.configure do
   # Apache or NGINX already handles this.
   config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
 
-  # Compress JavaScripts and CSS.
-  config.assets.js_compressor = Uglifier.new(harmony: true)
-
-  # config.assets.css_compressor = :sass
+  # If we're serving static files, make sure that they can be cached.
+  if ENV['RAILS_SERVE_STATIC_FILES'].present?
+    config.public_file_server.headers = {
+      'Cache-Control' => "public, max-age=#{1.year.to_i}"
+    }
+  end
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = false
@@ -90,7 +89,7 @@ Rails.application.configure do
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).
-  config.i18n.fallbacks = [I18n.default_locale]
+  config.i18n.fallbacks = true
 
   # Send deprecation notices to registered listeners.
   config.active_support.deprecation = :notify
@@ -157,40 +156,20 @@ Rails.application.configure do
   config.middleware.insert_before 0, Rack::Cors do
     allow do
       origins '*'
-      resource '/assets/*', methods: :get, headers: :any
+      resource '/vite/assets/*', methods: :get, headers: :any
     end
 
     allow do
       origins '*'
-      resource '/assets/**/*', methods: :get, headers: :any
+      resource '/vite/assets/**/*', methods: :get, headers: :any
     end
   end
 
-  # Add the GraphQL probe for Skylight.
-  config.skylight.probes << 'graphql'
+  Rack::Attack.enabled = ENV['REDIS_URL'].present?
 
-  # Add throttling to application
-  require_relative '../../lib/rack_throttle/rules'
-
-  rules = [
-    { method: 'POST', limit: ENV['GRAPH_API_RATE_LIMIT'] },
-    { method: 'GET', whitelisted: true }
-  ]
-
-  cache =
-    if ENV['MEMCACHEDCLOUD_SERVERS'].present?
-      Dalli::Client.new(
-        (ENV['MEMCACHEDCLOUD_SERVERS']).split(','),
-        {
-          username: ENV['MEMCACHEDCLOUD_USERNAME'],
-          password: ENV['MEMCACHEDCLOUD_PASSWORD']
-        }
-      )
-    end
-
-  config.middleware.use RackThrottle::Rules,
-                        rules: rules,
-                        cache: cache,
-                        key_prefix: :throttle,
-                        default: 20
+  Rack::Attack.cache.store =
+    ActiveSupport::Cache::RedisCacheStore.new(
+      namespace: 'lms-throttle',
+      url: ENV['REDIS_URL']
+    )
 end

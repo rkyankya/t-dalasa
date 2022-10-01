@@ -6,10 +6,9 @@ feature "Student's view of Course Curriculum", js: true do
 
   # The basics.
   let(:course) { create :course }
+  let(:cohort) { create :cohort, course: course }
   let!(:evaluation_criterion) { create :evaluation_criterion, course: course }
-  let!(:team) { create :startup, level: level_4 }
-  let(:dashboard_toured) { true }
-  let!(:student) { create :founder, startup: team }
+  let!(:student) { create :founder, level: level_4, cohort: cohort }
   let(:faculty) { create :faculty }
 
   # Levels.
@@ -118,7 +117,7 @@ feature "Student's view of Course Curriculum", js: true do
       :timeline_event,
       :with_owners,
       latest: true,
-      owners: team.founders,
+      owners: [student],
       target: completed_target_l1,
       passed_at: 1.day.ago
     )
@@ -128,7 +127,7 @@ feature "Student's view of Course Curriculum", js: true do
       :timeline_event,
       :with_owners,
       latest: true,
-      owners: team.founders,
+      owners: [student],
       target: completed_target_l2,
       passed_at: 1.day.ago
     )
@@ -138,7 +137,7 @@ feature "Student's view of Course Curriculum", js: true do
       :timeline_event,
       :with_owners,
       latest: true,
-      owners: team.founders,
+      owners: [student],
       target: completed_target_l3,
       passed_at: 1.day.ago
     )
@@ -148,7 +147,7 @@ feature "Student's view of Course Curriculum", js: true do
       :timeline_event,
       :with_owners,
       latest: true,
-      owners: team.founders,
+      owners: [student],
       target: completed_target_l4,
       passed_at: 1.day.ago,
       evaluator: faculty,
@@ -160,7 +159,7 @@ feature "Student's view of Course Curriculum", js: true do
       :timeline_event,
       :with_owners,
       latest: true,
-      owners: team.founders,
+      owners: [student],
       target: submitted_target
     )
   end
@@ -169,7 +168,7 @@ feature "Student's view of Course Curriculum", js: true do
       :timeline_event,
       :with_owners,
       latest: true,
-      owners: team.founders,
+      owners: [student],
       target: failed_target,
       evaluator: faculty,
       evaluated_at: Time.zone.now
@@ -195,7 +194,7 @@ feature "Student's view of Course Curriculum", js: true do
   around { |example| Time.use_zone(student.user.time_zone) { example.run } }
 
   scenario "student who has dropped out attempts to view a course's curriculum" do
-    student.startup.update!(dropped_out_at: 1.day.ago)
+    student.update!(dropped_out_at: 1.day.ago)
     sign_in_user student.user, referrer: curriculum_course_path(course)
     expect(page).to have_content("The page you were looking for doesn't exist!")
   end
@@ -207,7 +206,7 @@ feature "Student's view of Course Curriculum", js: true do
   end
 
   context 'when the course the student belongs has ended' do
-    let(:course) { create :course, ends_at: 1.day.ago }
+    let!(:cohort) { create :cohort, course: course, ends_at: 1.day.ago }
 
     scenario 'student visits the course curriculum page' do
       sign_in_user student.user, referrer: curriculum_course_path(course)
@@ -218,11 +217,12 @@ feature "Student's view of Course Curriculum", js: true do
   end
 
   context "when a student's access to a course has ended" do
-    let!(:team) { create :startup, level: level_4, access_ends_at: 1.day.ago }
+    let!(:cohort) { create :cohort, course: course, ends_at: 1.day.ago }
+    let!(:another_cohort) { create :cohort, course: course }
 
     scenario 'student visits the course curriculum page' do
       sign_in_user student.user, referrer: curriculum_course_path(course)
-      expect(page).to have_text('Your access to this course has ended.')
+      expect(page).to have_text('You have only limited access to the course now. You are allowed preview the content but cannot complete any target.')
     end
   end
 
@@ -245,19 +245,19 @@ feature "Student's view of Course Curriculum", js: true do
     expect(page).to have_content(pending_target_g2.title)
 
     # All targets should have the right status written next to their titles.
-    within("a[aria-label='Select Target #{completed_target_l4.id}']") do
+    within("a[data-target-id='#{completed_target_l4.id}']") do
       expect(page).to have_content('Completed')
     end
 
-    within("a[aria-label='Select Target #{submitted_target.id}']") do
+    within("a[data-target-id='#{submitted_target.id}']") do
       expect(page).to have_content('Pending Review')
     end
 
-    within("a[aria-label='Select Target #{failed_target.id}']") do
+    within("a[data-target-id='#{failed_target.id}']") do
       expect(page).to have_content('Rejected')
     end
 
-    within("a[aria-label='Select Target #{target_with_prerequisites.id}']") do
+    within("a[data-target-id='#{target_with_prerequisites.id}']") do
       expect(page).to have_content('Locked')
     end
 
@@ -289,7 +289,7 @@ feature "Student's view of Course Curriculum", js: true do
     expect(page).to have_content(target_group_l2.description)
     expect(page).to have_content(completed_target_l2.title)
 
-    within("a[aria-label='Select Target #{completed_target_l2.id}']") do
+    within("a[data-target-id='#{completed_target_l2.id}']") do
       expect(page).to have_content('Completed')
     end
   end
@@ -314,7 +314,7 @@ feature "Student's view of Course Curriculum", js: true do
     click_link l5_non_reviewed_target_with_prerequisite.title
 
     expect(page).to have_text(
-      'This target has pre-requisites that are incomplete.'
+      'This target has prerequisites that are incomplete.'
     )
     expect(page).to have_link(l5_non_reviewed_target.title)
 
@@ -338,7 +338,7 @@ feature "Student's view of Course Curriculum", js: true do
     click_link l5_non_reviewed_target_with_prerequisite.title
 
     expect(page).not_to have_text(
-      'This target has pre-requisites that are incomplete.'
+      'This target has prerequisites that are incomplete.'
     )
     expect(page).to have_button 'Mark As Complete'
 
@@ -435,17 +435,14 @@ feature "Student's view of Course Curriculum", js: true do
   context 'when a user has more than one student profile' do
     context 'when the profile is in the same school' do
       let(:course_2) { create :course }
+      let(:cohort_2) { create :cohort, course: course_2 }
       let(:c2_level_1) { create :level, :one, course: course_2 }
       let(:c2_target_group) { create :target_group, level: c2_level_1 }
       let!(:c2_target) do
         create :target, target_group: c2_target_group, role: Target::ROLE_TEAM
       end
-      let(:c2_team) { create :startup, level: c2_level_1 }
       let!(:c2_student) do
-        create :founder,
-               startup: c2_team,
-               dashboard_toured: dashboard_toured,
-               user: student.user
+        create :founder, level: c2_level_1, user: student.user, cohort: cohort_2
       end
 
       scenario 'student switches to another course' do
@@ -467,12 +464,8 @@ feature "Student's view of Course Curriculum", js: true do
       let(:school_2) { create :school }
       let(:course_2) { create :course, school: school_2 }
       let(:c2_level_1) { create :level, :one, course: course_2 }
-      let(:c2_team) { create :startup, level: c2_level_1 }
       let!(:c2_student) do
-        create :founder,
-               startup: c2_team,
-               dashboard_toured: dashboard_toured,
-               user: student.user
+        create :founder, level: c2_level_1, user: student.user
       end
 
       scenario 'courses in other schools are not displayed' do
@@ -522,7 +515,7 @@ feature "Student's view of Course Curriculum", js: true do
 
       # Being an admin, level 6 should be open, but there should be a notice saying when the level will open for 'regular' students.
       expect(page).to have_content(
-        "This level is still locked for students, and will be unlocked on #{locked_level_6.unlock_at.strftime('%b %-d')}"
+        "This level is still locked for students and will be unlocked on #{locked_level_6.unlock_at.strftime('%b %-d')}"
       )
       expect(page).to have_content(target_group_l6.name)
       expect(page).to have_content(target_group_l6.description)
@@ -552,10 +545,10 @@ feature "Student's view of Course Curriculum", js: true do
 
     before do
       # Enroll the student as a coach who can review her own submissions.
-      create :faculty_startup_enrollment,
-             :with_course_enrollment,
+      create :faculty_founder_enrollment,
+             :with_cohort_enrollment,
              faculty: coach,
-             startup: team
+             founder: student
     end
 
     scenario 'coach accesses content in locked levels' do
@@ -566,7 +559,7 @@ feature "Student's view of Course Curriculum", js: true do
 
       # Being a coach, level 6 should be accessible, but there should be a notice saying when the level will open for 'regular' students.
       expect(page).to have_content(
-        "This level is still locked for students, and will be unlocked on #{locked_level_6.unlock_at.strftime('%b %-d')}"
+        "This level is still locked for students and will be unlocked on #{locked_level_6.unlock_at.strftime('%b %-d')}"
       )
       expect(page).to have_content(target_group_l6.name)
       expect(page).to have_content(target_group_l6.description)

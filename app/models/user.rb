@@ -8,7 +8,8 @@ class User < ApplicationRecord
 
   belongs_to :school
   has_many :founders, dependent: :restrict_with_error
-  has_many :startups, through: :founders
+  has_many :teams, through: :founders
+  has_many :cohorts, through: :founders
   has_many :course_authors, dependent: :restrict_with_error
   has_many :communities, through: :founders
   has_many :courses, through: :founders
@@ -45,10 +46,6 @@ class User < ApplicationRecord
            inverse_of: :recipient,
            dependent: :destroy
 
-  has_secure_token :login_token
-  has_secure_token :reset_password_token
-  has_secure_token :delete_account_token
-
   # database_authenticable is required by devise_for to generate the session routes
   devise :database_authenticatable,
          :trackable,
@@ -57,7 +54,7 @@ class User < ApplicationRecord
          :recoverable,
          omniauth_providers: %i[google_oauth2 facebook github]
 
-  normalize_attribute :name, :about, :affiliation
+  normalize_attribute :name, :about, :affiliation, :preferred_name
 
   validates :email,
             presence: true,
@@ -76,25 +73,72 @@ class User < ApplicationRecord
     return unless name_changed?
 
     self.name =
-      name.split.map do |name_fragment|
-        name_fragment[0] = name_fragment[0].capitalize
-        name_fragment
-      end.join(' ')
+      name
+        .split
+        .map do |name_fragment|
+          name_fragment[0] = name_fragment[0].capitalize
+          name_fragment
+        end
+        .join(' ')
   end
 
   attr_reader :delete_account_token_original
   attr_reader :api_token
 
+  def regenerate_login_token
+    @original_login_token = SecureRandom.urlsafe_base64
+    update!(
+      login_token_digest: Digest::SHA2.base64digest(@original_login_token),
+      login_token_generated_at: Time.zone.now
+    )
+  end
+
+  def original_login_token
+    @original_login_token || raise('Original login token is unavailable')
+  end
+
+  def regenerate_reset_password_token
+    @original_reset_password_token = SecureRandom.urlsafe_base64
+    update!(
+      reset_password_token:
+        Digest::SHA2.base64digest(@original_reset_password_token)
+    )
+  end
+
+  def original_reset_password_token
+    @original_reset_password_token ||
+      raise('Original reset password token is unavailable')
+  end
+
   def regenerate_delete_account_token
     @delete_account_token_original = SecureRandom.urlsafe_base64
     update!(
-      delete_account_token:
+      delete_account_token_digest:
         Digest::SHA2.hexdigest(@delete_account_token_original)
     )
   end
 
+  def original_update_email_token
+    @original_update_email_token ||
+      raise('Original update email token is unavailable')
+  end
+
+  def regenerate_update_email_token
+    @original_update_email_token = SecureRandom.urlsafe_base64
+    update!(
+      update_email_token:
+        Digest::SHA2.base64digest(@original_update_email_token)
+    )
+  end
+
   def self.find_by_hashed_delete_account_token(delete_account_token)
-    find_by(delete_account_token: Digest::SHA2.hexdigest(delete_account_token))
+    find_by(
+      delete_account_token_digest: Digest::SHA2.hexdigest(delete_account_token)
+    )
+  end
+
+  def self.find_by_hashed_update_email_token(token)
+    find_by(update_email_token: token)
   end
 
   def regenerate_api_token
@@ -104,6 +148,13 @@ class User < ApplicationRecord
 
   def email_bounced?
     BounceReport.exists?(email: email)
+  end
+
+  def login_token_expiration_time
+    (
+      login_token_generated_at +
+        Rails.application.secrets.login_token_time_limit
+    ).strftime('%B %-d, %Y at %-l:%M %p')
   end
 
   # True if the user has ever signed in, handled by Users::ConfirmationService.
@@ -123,14 +174,14 @@ class User < ApplicationRecord
         gravity: 'center',
         resize: '320x320^',
         crop: '320x320+0+0'
-      )
+      ).processed
     when :thumb
       avatar.variant(
         auto_orient: true,
         gravity: 'center',
         resize: '100x100^',
         crop: '100x100+0+0'
-      )
+      ).processed
     else
       avatar
     end
@@ -145,14 +196,10 @@ class User < ApplicationRecord
     return unless avatar.attached?
 
     if variant.blank?
-      Rails.application.routes.url_helpers.rails_blob_path(
-        avatar,
-        only_path: true
-      )
+      Rails.application.routes.url_helpers.rails_public_blob_url(avatar)
     else
-      Rails.application.routes.url_helpers.rails_representation_path(
-        avatar_variant(variant),
-        only_path: true
+      Rails.application.routes.url_helpers.rails_public_blob_url(
+        avatar_variant(variant)
       )
     end
   end
@@ -163,14 +210,10 @@ class User < ApplicationRecord
 
     if avatar.attached?
       if variant.blank?
-        Rails.application.routes.url_helpers.rails_blob_path(
-          avatar,
-          only_path: true
-        )
+        Rails.application.routes.url_helpers.rails_public_blob_url(avatar)
       else
-        Rails.application.routes.url_helpers.rails_representation_path(
-          avatar_variant(variant),
-          only_path: true
+        Rails.application.routes.url_helpers.rails_public_blob_url(
+          avatar_variant(variant)
         )
       end
     else

@@ -4,13 +4,18 @@ class SubmissionsResolver < ApplicationQuery
   property :sort_direction
   property :sort_criterion
   property :level_id
-  property :coach_id
+  property :personal_coach_id
+  property :assigned_coach_id
+  property :reviewing_coach_id
+  property :target_id
+  property :search
+  property :exclude_submission_id
+  property :include_inactive
 
   def submissions
-    applicable_submissions
-      .includes(:startup_feedback, founders: [:user, :startup], target: :target_group)
-      .distinct
-      .order("#{sort_criterion_string} #{sort_direction_string}")
+    applicable_submissions.distinct.order(
+      "#{sort_criterion_string} #{sort_direction_string}"
+    )
   end
 
   def authorized?
@@ -46,32 +51,88 @@ class SubmissionsResolver < ApplicationQuery
   end
 
   def applicable_submissions
-    by_level = if level_id.present?
-      course.levels.where(id: level_id).first.timeline_events
-    else
-      course.timeline_events
-    end
+    # Filter by level
+    stage_1 =
+      if course.levels.exists?(id: level_id)
+        course.levels.find_by(id: level_id).timeline_events.not_auto_verified
+      else
+        course.timeline_events.not_auto_verified
+      end.live
 
-    by_level_and_status = case status
+    # Filter by target
+    stage_2 =
+      if course.targets.exists?(id: target_id)
+        stage_1.where(target_id: target_id)
+      else
+        stage_1
+      end
+
+    stage_3 = filter_by_status(stage_2)
+
+    # Filter by personal coach
+    stage_4 =
+      if course.faculty.exists?(id: personal_coach_id)
+        stage_3
+          .joins(founders: :faculty_founder_enrollments)
+          .where(faculty_founder_enrollments: { faculty_id: personal_coach_id })
+      else
+        stage_3
+      end
+
+    # Filter by assigned coach
+    stage_5 =
+      if course.faculty.exists?(id: assigned_coach_id)
+        stage_4.where(reviewer: assigned_coach_id)
+      else
+        stage_4
+      end
+
+    # Filter by evaluator coach
+    stage_6 =
+      if course.faculty.exists?(id: reviewing_coach_id)
+        stage_5.where(evaluator_id: reviewing_coach_id)
+      else
+        stage_5
+      end
+
+    final_list =
+      if exclude_submission_id.present?
+        stage_6.where.not(id: exclude_submission_id)
+      else
+        stage_6
+      end
+
+    final_list.from_founders(students)
+  end
+
+  def filter_by_status(submissions)
+    return submissions if status.blank?
+
+    case status
     when 'Pending'
-      by_level.pending_review
+      submissions.pending_review
     when 'Reviewed'
-      by_level.evaluated_by_faculty
+      submissions.evaluated_by_faculty
     else
       raise "Unexpected status '#{status}' encountered when resolving submissions"
     end
-
-    by_level_status_and_coach = if coach_id.present?
-      by_level_and_status.joins(founders: { startup: :faculty_startup_enrollments }).where(faculty_startup_enrollments: { faculty_id: coach_id })
-    else
-      by_level_and_status
-    end
-
-    by_level_status_and_coach.from_founders(students)
   end
 
   def students
-    @students ||= Founder.where(startup_id: course.startups)
+    @students ||=
+      begin
+        scope = include_inactive ? course.founders : course.founders.active
+
+        if search.present?
+          students_with_users = scope.joins(:user)
+
+          students_with_users
+            .where('users.name ILIKE ?', "%#{search}%")
+            .or(students_with_users.where('users.email ILIKE ?', "%#{search}%"))
+        else
+          scope
+        end
+      end
   end
 
   def allow_token_auth?

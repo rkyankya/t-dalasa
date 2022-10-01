@@ -2,8 +2,8 @@ module Mutations
   class CreateGrading < ApplicationQuery
     include QueryAuthorizeCoach
     include DevelopersNotifications
+    include ValidateSubmissionGradable
 
-    argument :submission_id, ID, required: true
     argument :grades, [Types::GradeInputType], required: true
     argument :feedback,
              String,
@@ -80,17 +80,18 @@ module Mutations
       end
 
       def right_shape_for_checklist
-        if @checklist.respond_to?(:all?) && @checklist.all? do |item|
-             item['title'].is_a?(String) &&
-               item['kind'].in?(Target.valid_checklist_kind_types) &&
-               item['status'].in?(
-                 [
-                   TimelineEvent::CHECKLIST_STATUS_FAILED,
-                   TimelineEvent::CHECKLIST_STATUS_NO_ANSWER
-                 ]
-               ) &&
-               (item['result'].is_a?(String) || item['result'].is_a?(Array))
-           end
+        if @checklist.respond_to?(:all?) &&
+             @checklist.all? do |item|
+               item['title'].is_a?(String) &&
+                 item['kind'].in?(Target.valid_checklist_kind_types) &&
+                 item['status'].in?(
+                   [
+                     TimelineEvent::CHECKLIST_STATUS_FAILED,
+                     TimelineEvent::CHECKLIST_STATUS_NO_ANSWER
+                   ]
+                 ) &&
+                 (item['result'].is_a?(String) || item['result'].is_a?(Array))
+             end
           return
         end
 
@@ -185,7 +186,9 @@ module Mutations
           passed_at: (failed? ? nil : Time.zone.now),
           evaluator: coach,
           evaluated_at: Time.zone.now,
-          checklist: @params[:checklist]
+          checklist: @params[:checklist],
+          reviewer: nil,
+          reviewer_assigned_at: nil
         )
 
         TimelineEvents::AfterGradingJob.perform_later(submission)
@@ -250,7 +253,6 @@ module Mutations
       startup_feedback =
         StartupFeedback.create!(
           feedback: @params[:feedback],
-          startup: submission.startup,
           faculty: coach,
           timeline_event: submission
         )

@@ -22,11 +22,12 @@ feature 'Target Overlay', js: true do
            pass_grade: 2,
            grade_labels: grade_labels_for_1
   end
+  let!(:cohort) { create :cohort, course: course }
   let!(:criterion_2) { create :evaluation_criterion, course: course }
   let!(:level_0) { create :level, :zero, course: course }
   let!(:level_1) { create :level, :one, course: course }
   let!(:level_2) { create :level, :two, course: course }
-  let!(:team) { create :startup, level: level_1 }
+  let!(:team) { create :team_with_students, cohort: cohort }
   let!(:student) { team.founders.first }
   let!(:target_group_l0) { create :target_group, level: level_0 }
   let!(:target_group_l1) do
@@ -161,7 +162,7 @@ feature 'Target Overlay', js: true do
 
     # There should also be a link to the completion section at the bottom of content.
     find('.course-overlay__body-tab-item', text: 'Learn').click
-    find('a', text: 'Submit work for review').click
+    click_button 'Submit work for review'
 
     long_answer = Faker::Lorem.sentence
 
@@ -203,7 +204,7 @@ feature 'Target Overlay', js: true do
     # The status should also be updated on the dashboard page.
     click_button 'Close'
 
-    within("a[aria-label='Select Target #{target_l1.id}'") do
+    within("a[data-target-id='#{target_l1.id}']") do
       expect(page).to have_content('Pending Review')
     end
 
@@ -220,10 +221,8 @@ feature 'Target Overlay', js: true do
     # This action should reload the page and return the user to the content of the target.
     expect(page).to have_selector('.learn-content-block__embed')
 
-    # The last submissions should have been deleted...
-    expect { last_submission.reload }.to raise_exception(
-      ActiveRecord::RecordNotFound
-    )
+    # The last submissions should have been archived...
+    expect(last_submission.reload.archived_at).to_not eq(nil)
 
     # ...and the complete section should be accessible again.
     expect(page).to have_selector(
@@ -282,7 +281,7 @@ feature 'Target Overlay', js: true do
 
       # Since this is a team target, other students shouldn't be listed as pending.
       expect(page).not_to have_content(
-        'You have team members who are yet to complete this target'
+        'You have team members who have yet to complete this target'
       )
 
       # Target should have been marked as passed in the database.
@@ -365,7 +364,8 @@ feature 'Target Overlay', js: true do
 
       # There should also be a link to the quiz at the bottom of content.
       find('.course-overlay__body-tab-item', text: 'Learn').click
-      find('a', text: 'Take a Quiz').click
+
+      click_button 'Take a Quiz'
 
       # Question one
       expect(page).to have_content(/Question #1/i)
@@ -444,32 +444,32 @@ feature 'Target Overlay', js: true do
              created_at: 3.days.ago,
              evaluated_at: 1.day.ago
     end
+    let!(:archived_submission) do
+      create :timeline_event,
+             :with_owners,
+             latest: false,
+             target: target_l1,
+             owners: team.founders,
+             created_at: 3.days.ago,
+             archived_at: 1.day.ago
+    end
     let!(:attached_file) do
       create :timeline_event_file, timeline_event: submission_2
     end
     let!(:feedback_1) do
-      create :startup_feedback,
-             timeline_event: submission_1,
-             startup: team,
-             faculty: coach_1
+      create :startup_feedback, timeline_event: submission_1, faculty: coach_1
     end
     let!(:feedback_2) do
-      create :startup_feedback,
-             timeline_event: submission_1,
-             startup: team,
-             faculty: coach_2
+      create :startup_feedback, timeline_event: submission_1, faculty: coach_2
     end
     let!(:feedback_3) do
-      create :startup_feedback,
-             timeline_event: submission_2,
-             startup: team,
-             faculty: coach_3
+      create :startup_feedback, timeline_event: submission_2, faculty: coach_3
     end
 
     before do
-      # Enroll one of the coaches to course, and another to the team. One should be left un-enrolled to test how that's handled.
-      create(:faculty_course_enrollment, faculty: coach_1, course: course)
-      create(:faculty_startup_enrollment, faculty: coach_3, startup: team)
+      # Enroll one of the coaches to course, and another to the student. One should be left un-enrolled to test how that's handled.
+      create(:faculty_cohort_enrollment, faculty: coach_1, cohort: cohort)
+      create(:faculty_founder_enrollment, faculty: coach_3, founder: student)
 
       # First submission should have failed on one criterion.
       create(
@@ -506,7 +506,12 @@ feature 'Target Overlay', js: true do
       find('.course-overlay__body-tab-item', text: 'Submissions & Feedback')
         .click
 
-      # Both submissions should be visible, along with grading and all feedback from coaches.
+      # Both submissions should be visible, along with grading and all feedback from coaches. Archived submission should not be listed
+
+      expect(page).to have_selector(
+        '.curriculum__submission-feedback-container',
+        count: 2
+      )
       within(
         "div[aria-label='Details about your submission on #{submission_1.created_at.strftime('%B %-d, %Y')}']"
       ) do
@@ -613,7 +618,7 @@ feature 'Target Overlay', js: true do
       expect(other_students.count).to be > 0
 
       expect(page).to have_content(
-        'You have team members who are yet to complete this target:'
+        'You have team members who have yet to complete this target:'
       )
 
       # The other students should also be listed.
@@ -636,7 +641,7 @@ feature 'Target Overlay', js: true do
       end
 
       expect(page).to have_content(
-        'This target has pre-requisites that are incomplete.'
+        'This target has prerequisites that are incomplete.'
       )
 
       # It should be possible to navigate to the prerequisite target.
@@ -653,7 +658,7 @@ feature 'Target Overlay', js: true do
   end
 
   context 'when the course has ended' do
-    before { course.update!(ends_at: 1.day.ago) }
+    before { student.cohort.update!(ends_at: 1.day.ago) }
 
     scenario 'student visits a pending target' do
       sign_in_user student.user, referrer: target_path(target_l1)
@@ -699,7 +704,10 @@ feature 'Target Overlay', js: true do
   end
 
   context "when student's access to course has ended" do
-    before { team.update!(access_ends_at: 1.day.ago) }
+    before do
+      cohort.update!(ends_at: 1.day.ago)
+      create(:cohort, course: course)
+    end
 
     scenario 'student visits a target in a course where their access has ended' do
       sign_in_user student.user, referrer: target_path(target_l1)
@@ -709,7 +717,9 @@ feature 'Target Overlay', js: true do
         expect(page).to have_content('Locked')
       end
 
-      expect(page).to have_content('Your access to this course has ended.')
+      expect(page).to have_content(
+        'You have only limited access to the course now. You are allowed preview the content but cannot complete any target.'
+      )
       expect(page).not_to have_selector(
         '.course-overlay__body-tab-item',
         text: 'Complete'
@@ -1013,8 +1023,8 @@ feature 'Target Overlay', js: true do
   end
 
   context 'when there are two teams with cross-linked submissions' do
-    let!(:team_1) { create :startup, level: level_1 }
-    let!(:team_2) { create :startup, level: level_1 }
+    let!(:team_1) { create :team_with_students, cohort: cohort }
+    let!(:team_2) { create :team_with_students, cohort: cohort }
 
     let(:student_a) { team_1.founders.first }
     let(:student_b) { team_1.founders.last }
@@ -1067,9 +1077,7 @@ feature 'Target Overlay', js: true do
       # This action should delete `submission_new`, reload the page and return the user to the content of the target.
       expect(page).to have_selector('.learn-content-block__embed')
 
-      expect { submission_new.reload }.to raise_error(
-        ActiveRecord::RecordNotFound
-      )
+      expect(submission_new.reload.archived_at).to_not eq(nil)
       expect(target_l1.latest_submission(student_a)).to eq(submission_old_1)
       expect(target_l1.latest_submission(student_b)).to eq(submission_old_2)
       expect(target_l1.latest_submission(student_c)).to eq(submission_old_1)
@@ -1078,8 +1086,8 @@ feature 'Target Overlay', js: true do
   end
 
   context 'when the team changes for a group of students' do
-    let!(:team_1) { create :startup, level: level_1 }
-    let!(:team_2) { create :startup, level: level_1 }
+    let!(:team_1) { create :team_with_students, cohort: cohort }
+    let!(:team_2) { create :team_with_students, cohort: cohort }
 
     let(:student_1) { team_1.founders.first }
     let(:student_2) { team_2.founders.first }
@@ -1101,7 +1109,7 @@ feature 'Target Overlay', js: true do
              owners: team_2.founders
     end
 
-    before { student_2.update!(startup: team_1) }
+    before { student_2.update!(team: team_1) }
 
     scenario 'latest flag is updated correctly for all students' do
       sign_in_user student_1.user, referrer: target_path(target_l1)

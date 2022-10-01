@@ -22,19 +22,18 @@ module Schools
       end
 
       def course_details
-        {
-          id: @course.id
-        }
+        { id: @course.id }
       end
 
       def course_export_details
         course_exports.map do |export|
-          file = if export.file.attached?
-            {
-              path: view.rails_blob_path(export.file, only_path: true),
-              created_at: export.file.created_at
-            }
-          end
+          file =
+            if export.file.attached?
+              {
+                path: view.rails_public_blob_url(export.file),
+                created_at: export.file.created_at
+              }
+            end
 
           {
             id: export.id,
@@ -42,13 +41,21 @@ module Schools
             file: file,
             export_type: export.export_type,
             tags: export.tags.collect(&:name),
-            reviewed_only: export.reviewed_only
+            reviewed_only: export.reviewed_only,
+            includeInactiveStudents: export.include_inactive_students
           }
         end
       end
 
       def course_exports
-        @course_exports ||= @course.course_exports.order(created_at: :DESC).includes(:tags).with_attached_file.limit(50).load
+        @course_exports ||=
+          @course
+            .course_exports
+            .order(created_at: :DESC)
+            .includes(:tags)
+            .with_attached_file
+            .limit(50)
+            .load
       end
     end
   end

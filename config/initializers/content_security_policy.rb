@@ -13,10 +13,6 @@ Rails.application.config.content_security_policy do |policy|
     { frame: 'https://www.facebook.com' }
   end
 
-  def typeform_csp
-    { frame: 'https://svlabs.typeform.com' }
-  end
-
   def slideshare_csp
     { frame: %w[slideshare.net *.slideshare.net] }
   end
@@ -49,18 +45,22 @@ Rails.application.config.content_security_policy do |policy|
     { connect: 'https://api.rollbar.com' }
   end
 
+  def jsdelivr_csp
+    { style: 'cdn.jsdelivr.net', font: 'cdn.jsdelivr.net' }
+  end
+
   def style_sources
-    ['fonts.googleapis.com', asset_host] - [nil]
+    ['fonts.googleapis.com', jsdelivr_csp[:style], asset_host] - [nil]
   end
 
   def connect_sources
     sources = [rollbar_csp[:connect], *vimeo_csp[:connect]]
-    sources += %w[http://localhost:3035 ws://localhost:3035] if Rails.env.development?
+    sources += %w[ws://localhost:3036 ws://school.localhost:3036 ws://www.school.localhost:3036] if Rails.env.development?
     sources
   end
 
   def font_sources
-    ['fonts.gstatic.com', asset_host] - [nil]
+    ['fonts.gstatic.com', jsdelivr_csp[:font], asset_host] - [nil]
   end
 
   def child_sources
@@ -69,7 +69,7 @@ Rails.application.config.content_security_policy do |policy|
 
   def frame_sources
     [
-      'https://www.google.com', typeform_csp[:frame], youtube_csp[:frame], vimeo_csp[:frame], *slideshare_csp[:frame], *speakerdeck_csp[:frame], *google_form_csp[:frame], facebook_csp[:frame], recaptcha_csp[:frame]
+      'https://www.google.com', youtube_csp[:frame], vimeo_csp[:frame], *slideshare_csp[:frame], *speakerdeck_csp[:frame], *google_form_csp[:frame], facebook_csp[:frame], recaptcha_csp[:frame]
     ]
   end
 
@@ -79,12 +79,27 @@ Rails.application.config.content_security_policy do |policy|
 
   policy.default_src :none
   policy.img_src '*', :data, :blob
-  policy.script_src :unsafe_eval, :unsafe_inline, :strict_dynamic, 'https:', 'http:'
+  policy.script_src :strict_dynamic, :unsafe_eval, :unsafe_inline, 'https:', 'http:'
+
+  # Allow @vite/client to hot reload javascript changes in development
+  policy.script_src(*policy.script_src, :unsafe_eval, "http://#{ ViteRuby.config.host_with_port }") if Rails.env.development?
+
+  # You may need to enable this in production as well depending on your setup.
+  policy.script_src(*policy.script_src, :blob) if Rails.env.test?
+
   policy.style_src :self, :unsafe_inline, *style_sources
+
+  # Allow @vite/client to hot reload style changes in development
+  policy.style_src(*policy.style_src, :unsafe_inline) if Rails.env.development?
+
   policy.connect_src :self, *connect_sources
+
+  # Allow @vite/client to hot reload changes in development
+  policy.connect_src(*policy.connect_src, "ws://#{ ViteRuby.config.host_with_port }") if Rails.env.development?
+
   policy.font_src :self, *font_sources
   policy.child_src(*child_sources)
-  policy.frame_src :data, *frame_sources
+  policy.frame_src :self, :data, *frame_sources
   policy.media_src :self, *media_sources, '* blob:'
   policy.object_src :self
   policy.worker_src :self

@@ -94,10 +94,21 @@ module Targets
     end
 
     def pending_user_ids
-      @founder.startup.founders.where.not(id: @founder).select do |founder|
-        team_member_submissions = founder.timeline_events.where(target: @target)
-        team_member_submissions.failed.count == team_member_submissions.count
-      end.map(&:user_id)
+      if @founder.team
+        @founder
+          .team
+          .founders
+          .where.not(id: @founder)
+          .select do |founder|
+            team_member_submissions =
+              founder.timeline_events.live.where(target: @target)
+            team_member_submissions.failed.count ==
+              team_member_submissions.count
+          end
+          .map(&:user_id)
+      else
+        []
+      end
     end
 
     def details_for_submissions
@@ -116,6 +127,7 @@ module Targets
       scope =
         @target
           .timeline_events
+          .live
           .joins(:founders)
           .where(founders: { id: @founder })
 
@@ -194,7 +206,7 @@ module Targets
             )
           if content_block.file.attached?
             cb['file_url'] =
-              url_helpers.rails_blob_path(content_block.file, only_path: true)
+              url_helpers.rails_public_blob_url(content_block.file)
             cb['filename'] = content_block.file.filename
           end
           cb

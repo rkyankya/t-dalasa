@@ -2,11 +2,13 @@ require 'rails_helper'
 
 feature 'Apply for public courses', js: true do
   include UserSpecHelper
+  include HtmlSanitizerSpecHelper
 
   # The basics.
   let(:school) { create :school, :current }
   let(:school_2) { create :school }
   let(:public_course) { create :course, school: school, public_signup: true }
+  let(:cohort) { create :cohort, course: public_course }
   let!(:level_one) { create :level, course: public_course }
   let(:private_course) { create :course, school: school }
   let(:public_course_in_school_2) do
@@ -16,13 +18,14 @@ feature 'Apply for public courses', js: true do
   let(:email) { Faker::Internet.email(name: name) }
   let(:name_2) { Faker::Name.name }
   let(:email_2) { Faker::Internet.email(name: name_2) }
-  let(:startup) { create :startup, level: level_one }
+  let(:student) { create :founder, level: level_one, cohort: cohort }
   let(:token) { Faker::Crypto.md5 }
   let(:saved_tag) { Faker::Lorem.word }
   let(:bounced_email) { Faker::Internet.email }
   let!(:bounce_report) { create :bounce_report, email: bounced_email }
 
   before do
+    public_course.update!(default_cohort: cohort)
     school.founder_tag_list.add(saved_tag)
     school.save!
   end
@@ -51,19 +54,28 @@ feature 'Apply for public courses', js: true do
     expect(applicant.login_mail_sent_at).not_to eq(nil)
 
     open_email(email)
-    expect(current_email.body).to include(public_course.name)
-    expect(current_email.body).to include(applicant.login_token)
 
-    visit enroll_applicants_path(applicant.login_token)
+    body = sanitize_html(current_email.body)
+
+    expect(body).to include(public_course.name)
+    expect(body).to match(/[a-zA-Z0-9\-_]{22}/)
+    expect(current_email.subject).to eq('Verify Your Email Address')
+
+    expect(body).to include(
+      "To activate your #{public_course.school.name} account"
+    )
+
+    applicant.regenerate_login_token
+    visit enroll_applicants_path(applicant.original_login_token)
 
     expect(page).to have_content("Welcome to #{school.name}!")
     expect(page).to have_content(applicant.name)
     expect(page).to have_content(public_course.name)
 
-    team = User.with_email(applicant.email).first.founders.first.startup
+    student = User.with_email(applicant.email).first.founders.first
 
-    expect(team.tag_list).to include(saved_tag)
-    expect(team.tag_list).not_to include('Public Signup')
+    expect(student.tag_list).to include(saved_tag)
+    expect(student.tag_list).not_to include('Public Signup')
   end
 
   context 'When course has a processing url' do
@@ -75,9 +87,30 @@ feature 'Apply for public courses', js: true do
     before { public_course.update!(processing_url: processing_url) }
 
     scenario 'applicant tries to sign up multiple times in quick succession' do
+      visit apply_course_path(public_course, name: name, email: email)
+
+      click_button 'Apply'
+
+      expect(page).to have_content("We've sent you a verification mail")
+
+      applicant = Applicant.where(email: email).first
+
+      open_email(email)
+
+      expect(current_email.subject).to eq(
+        "Complete your #{public_course.name} course application"
+      )
+
+      expect(sanitize_html(current_email.body)).to include(
+        "We've received your application to the #{public_course.name} course at #{public_course.school.name}"
+      )
+
       expected_url =
         "https://www.example.com/q?course_id=#{public_course.id}&applicant_id=#{applicant.id}&name=#{applicant.name}&email=#{applicant.email}"
-      visit enroll_applicants_path(applicant.login_token)
+
+      applicant.regenerate_login_token
+
+      visit enroll_applicants_path(applicant.original_login_token)
 
       # User should be redirected to the processing_url.
       expect(page).to have_current_path(expected_url, url: true)
@@ -114,10 +147,12 @@ feature 'Apply for public courses', js: true do
 
     expect(page).to have_content("We've sent you a verification mail")
 
-    visit enroll_applicants_path(Applicant.last.login_token)
+    applicant = Applicant.last
+    applicant.regenerate_login_token
+    visit enroll_applicants_path(applicant.original_login_token)
 
     expect(page).to have_content("Welcome to #{school.name}!")
-    expect(Startup.last.tag_list).to include('Public Signup')
+    expect(Founder.last.tag_list).to include('Public Signup')
   end
 
   scenario 'applicant signing up with an unknown tag is given the default tag' do
@@ -131,14 +166,16 @@ feature 'Apply for public courses', js: true do
 
     expect(page).to have_content("We've sent you a verification mail")
 
-    visit enroll_applicants_path(Applicant.last.login_token)
+    applicant = Applicant.last
+    applicant.regenerate_login_token
+    visit enroll_applicants_path(applicant.original_login_token)
 
     expect(page).to have_content("Welcome to #{school.name}!")
 
-    team = Startup.last
+    student = Founder.last
 
-    expect(team.tag_list).to include('Public Signup')
-    expect(team.tag_list).not_to include('An unknown tag')
+    expect(student.tag_list).to include('Public Signup')
+    expect(student.tag_list).not_to include('An unknown tag')
   end
 
   scenario 'applicant tag is remembered even if user navigates away before returning and applying' do
@@ -155,9 +192,11 @@ feature 'Apply for public courses', js: true do
 
     expect(page).to have_content("We've sent you a verification mail")
 
-    visit enroll_applicants_path(Applicant.last.login_token)
+    applicant = Applicant.last
+    applicant.regenerate_login_token
+    visit enroll_applicants_path(applicant.original_login_token)
 
-    expect(Startup.last.tag_list).to include(saved_tag)
+    expect(Founder.last.tag_list).to include(saved_tag)
   end
 
   scenario 'user visits a public course in other school' do
@@ -168,7 +207,7 @@ feature 'Apply for public courses', js: true do
   end
 
   scenario 'a student in the course tries public enrollment' do
-    user = startup.founders.first.user
+    user = student.user
 
     visit apply_course_path(public_course)
     fill_in 'Email', with: user.email
@@ -181,7 +220,7 @@ feature 'Apply for public courses', js: true do
   end
 
   scenario 'a student in the course tries public enrollment with a different email casing' do
-    user = startup.founders.first.user
+    user = student.user
 
     visit apply_course_path(public_course)
     fill_in 'Email', with: user.email.upcase
@@ -217,7 +256,7 @@ feature 'Apply for public courses', js: true do
     click_button 'Apply'
 
     expect(page).to have_text(
-      "The email address you supplied cannot be used because an email we'd sent earlier bounced"
+      'The email address you supplied cannot be used because an email we sent earlier bounced'
     )
   end
 

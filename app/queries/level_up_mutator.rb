@@ -12,23 +12,24 @@ class LevelUpMutator < ApplicationQuery
   def must_be_eligible
     return if level_up_eligibility_service.eligible?
 
-    errors[:base] << level_up_eligibility_service.eligibility
+    errors.add(:base, level_up_eligibility_service.eligibility)
   end
 
   def level_up_eligibility_service
-    @level_up_eligibility_service ||= Students::LevelUpEligibilityService.new(student)
+    @level_up_eligibility_service ||=
+      Students::LevelUpEligibilityService.new(student)
   end
 
   def course
     @course ||= Course.find_by(id: course_id)
   end
 
-  def team
-    @team ||= student.startup
-  end
-
   def student
-    @student ||= current_user.founders.joins(:level).find_by(levels: { course_id: course_id })
+    @student ||=
+      current_user
+        .founders
+        .joins(:level)
+        .find_by(levels: { course_id: course_id })
   end
 
   def authorized?
@@ -36,7 +37,7 @@ class LevelUpMutator < ApplicationQuery
   end
 
   def level_up
-    next_level = course.levels.find_by(number: team.level.number + 1)
-    team.update!(level: next_level)
+    next_level = course.levels.find_by(number: student.level.number + 1)
+    student.update!(level: next_level)
   end
 end
