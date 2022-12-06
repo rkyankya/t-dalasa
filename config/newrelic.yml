@@ -12,11 +12,11 @@
 
 common:
   &default_settings # Required license key associated with your New Relic account.
-  license_key: ENV['NEW_RELIC_LICENSE_KEY']
+  license_key: bbce5952e6c1d6e0540b5ee6f07d8d96277eNRAL
 
   # Your application name. Renaming here affects where data displays in New
   # Relic.  For more details, see https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/renaming-applications
-  app_name: PupilfirstLMS
+  app_name: Dalasa
 
   distributed_tracing:
     enabled: true
@@ -26,6 +26,11 @@ common:
 
   # Logging level for log/newrelic_agent.log
   log_level: info
+
+  # Automatic-injection of browser monitoring to be disabled because it must be enabled manually,
+  # injecting nonce via template file. For more details, see https://github.com/newrelic/newrelic-ruby-agent/pull/673
+  browser_monitoring:
+    auto_instrument: false
 
   application_logging:
     # If `true`, all logging-related features for the agent can be enabled or disabled
@@ -48,6 +53,18 @@ common:
 # Environment-specific settings are in this section.
 # RAILS_ENV or RACK_ENV (as appropriate) is used to determine the environment.
 # If your application has other named environments, configure them here.
+development:
+  <<: *default_settings
+  app_name: Dalasa (Development)
+
+test:
+  <<: *default_settings
+  # It doesn't make sense to report to New Relic from automated test runs.
+  monitor_mode: false
+
+staging:
+  <<: *default_settings
+  app_name: Dalasa (Staging)
 
 production:
   <<: *default_settings

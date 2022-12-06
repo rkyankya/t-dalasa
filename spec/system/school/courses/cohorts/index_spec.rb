@@ -83,23 +83,15 @@ feature 'Cohorts Index', js: true do
       create_list :cohort, 30, course: course, ends_at: 10.days.from_now
     end
 
-    def safe_random_cohorts
-      @selected_cohort_ids ||= []
-      cohort =
-        Cohort.all.where.not(id: @selected_cohort_ids).order('random()').first
-      @selected_cohort_ids << cohort.id
-      cohort
-    end
-
-    let(:oldest_created) { safe_random_cohorts }
-    let(:newest_created) { safe_random_cohorts }
-    let(:first_ending) { safe_random_cohorts }
-    let(:cohort_aaa) { safe_random_cohorts }
-    let(:cohort_zzz) { safe_random_cohorts }
+    let(:oldest_created) { cohorts[-1] }
+    let(:newest_created) { cohorts[-2] }
+    let(:first_ending) { cohorts[-3] }
+    let(:cohort_aaa) { cohorts[-4] }
+    let(:cohort_zzz) { cohorts[-5] }
 
     before do
-      cohort_aaa.update!(name: 'aaa aa')
-      cohort_zzz.update!(name: 'zzz zz')
+      cohort_aaa.update!(name: 'AA aa')
+      cohort_zzz.update!(name: 'ZZ zz')
       oldest_created.update!(created_at: Time.at(0))
       newest_created.update!(created_at: 1.day.from_now)
       first_ending.update!(ends_at: 1.day.from_now)
@@ -174,8 +166,8 @@ feature 'Cohorts Index', js: true do
 
       expect(page).not_to have_text(cohort_zzz.name)
 
-      fill_in 'Filter Resources', with: 'zz'
-      click_button 'Pick Search by Name: zz'
+      fill_in 'Filter Resources', with: 'ZZ'
+      click_button 'Pick Search by Name: ZZ'
 
       expect(page).to have_text(cohort_zzz.name)
     end

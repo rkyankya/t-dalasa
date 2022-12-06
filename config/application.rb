@@ -12,14 +12,14 @@ Bundler.require(*Rails.groups)
 
 module Pupilfirst
   class Application < Rails::Application
-    VERSION = '2022.2'
-
     # Initialize configuration defaults for originally generated Rails version.
     #
     # Note: This is not the original Rails version. However, this is the easiest way to enforce the latest defaults.
     config.load_defaults 6.1
 
     config.assets.precompile << 'delayed/web/application.css'
+
+    config.time_zone = 'Africa/Nairobi'
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers

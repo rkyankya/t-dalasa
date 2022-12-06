@@ -1,6 +1,6 @@
 require_relative 'helper'
 
-after 'development:levels', 'development:users' do
+after 'development:levels', 'development:cohorts', 'development:users' do
   puts 'Seeding founders'
 
   admin_user = User.find_by(email: 'admin@example.com')
@@ -17,7 +17,7 @@ after 'development:levels', 'development:users' do
       )
     end
 
-  (1..25).each do |index|
+  (1..200).each do |index|
     student_user = User.find_by(email: "student#{index}@example.com")
     available_tags = student_user.school.founder_tag_list.to_a
     student_user

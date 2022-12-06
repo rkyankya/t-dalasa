@@ -1,5 +1,6 @@
 class School < ApplicationRecord
   has_many :users, dependent: :destroy
+  has_many :organisations, dependent: :destroy
   has_many :courses, dependent: :restrict_with_error
   has_many :cohorts, through: :courses
   has_many :founders, through: :users
@@ -33,6 +34,9 @@ class School < ApplicationRecord
     case variant
     when :mid
       logo.variant(auto_orient: true, gravity: 'center', resize: '200x200>')
+        .processed
+    when :high
+      logo.variant(auto_orient: true, gravity: 'center', resize: '500x500>')
         .processed
     when :thumb
       logo.variant(auto_orient: true, gravity: 'center', resize: '100x100>')

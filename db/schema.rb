@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_08_05_063129) do
+ActiveRecord::Schema.define(version: 2022_11_24_124958) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
@@ -131,6 +131,7 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.bigint "course_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "discord_role_ids", default: [], array: true
     t.index ["course_id"], name: "index_cohorts_on_course_id"
   end
 
@@ -140,6 +141,7 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.bigint "school_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "discord_channel_id"
     t.index ["school_id"], name: "index_communities_on_school_id"
   end
 
@@ -189,7 +191,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "school_id"
-    t.datetime "ends_at"
     t.string "description"
     t.boolean "enable_leaderboard", default: false
     t.boolean "public_signup", default: false
@@ -203,6 +204,7 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.string "processing_url"
     t.jsonb "highlights", default: []
     t.bigint "default_cohort_id"
+    t.boolean "discord_account_required", default: false
     t.index ["default_cohort_id"], name: "index_courses_on_default_cohort_id"
     t.index ["school_id"], name: "index_courses_on_school_id"
   end
@@ -257,8 +259,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.string "current_commitment"
     t.string "commitment"
     t.string "compensation"
-    t.string "slack_username"
-    t.string "slack_user_id"
     t.bigint "user_id"
     t.boolean "public", default: false
     t.string "connect_link"
@@ -277,15 +277,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.index ["faculty_id"], name: "index_faculty_cohort_enrollments_on_faculty_id"
   end
 
-  create_table "faculty_course_enrollments", force: :cascade do |t|
-    t.bigint "faculty_id"
-    t.bigint "course_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["course_id", "faculty_id"], name: "index_faculty_course_enrollments_on_course_id_and_faculty_id", unique: true
-    t.index ["faculty_id"], name: "index_faculty_course_enrollments_on_faculty_id"
-  end
-
   create_table "faculty_founder_enrollments", force: :cascade do |t|
     t.bigint "faculty_id"
     t.bigint "founder_id"
@@ -293,15 +284,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["faculty_id"], name: "index_faculty_founder_enrollments_on_faculty_id"
     t.index ["founder_id", "faculty_id"], name: "index_faculty_founder_enrollments_on_founder_id_and_faculty_id", unique: true
-  end
-
-  create_table "faculty_startup_enrollments", force: :cascade do |t|
-    t.bigint "faculty_id"
-    t.bigint "startup_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["faculty_id"], name: "index_faculty_startup_enrollments_on_faculty_id"
-    t.index ["startup_id", "faculty_id"], name: "index_faculty_startup_enrollments_on_startup_id_and_faculty_id", unique: true
   end
 
   create_table "features", id: :serial, force: :cascade do |t|
@@ -330,19 +312,15 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
   create_table "founders", id: :serial, force: :cascade do |t|
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer "startup_id"
     t.string "auth_token"
-    t.string "slack_username"
     t.string "roles"
-    t.string "slack_user_id"
     t.integer "user_id"
-    t.boolean "dashboard_toured"
-    t.integer "resume_file_id"
     t.boolean "excluded_from_leaderboard", default: false
     t.datetime "dropped_out_at"
     t.bigint "cohort_id"
     t.bigint "level_id"
     t.bigint "team_id"
+    t.datetime "completed_at"
     t.index ["cohort_id"], name: "index_founders_on_cohort_id"
     t.index ["level_id"], name: "index_founders_on_level_id"
     t.index ["team_id"], name: "index_founders_on_team_id"
@@ -415,6 +393,23 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
   end
 
+  create_table "organisation_admins", force: :cascade do |t|
+    t.bigint "organisation_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["organisation_id"], name: "index_organisation_admins_on_organisation_id"
+    t.index ["user_id"], name: "index_organisation_admins_on_user_id"
+  end
+
+  create_table "organisations", force: :cascade do |t|
+    t.string "name"
+    t.bigint "school_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["school_id"], name: "index_organisations_on_school_id"
+  end
+
   create_table "post_likes", force: :cascade do |t|
     t.bigint "post_id"
     t.bigint "user_id"
@@ -443,18 +438,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.index ["post_number", "topic_id"], name: "index_posts_on_post_number_and_topic_id", unique: true
     t.index ["reply_to_post_id"], name: "index_posts_on_reply_to_post_id"
     t.index ["topic_id"], name: "index_posts_on_topic_id"
-  end
-
-  create_table "public_slack_messages", id: :serial, force: :cascade do |t|
-    t.text "body"
-    t.string "slack_username"
-    t.integer "founder_id"
-    t.string "channel"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "timestamp"
-    t.integer "reaction_to_id"
-    t.index ["founder_id"], name: "index_public_slack_messages_on_founder_id"
   end
 
   create_table "quiz_questions", force: :cascade do |t|
@@ -535,16 +518,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.integer "timeline_event_id"
     t.index ["faculty_id"], name: "index_startup_feedback_on_faculty_id"
     t.index ["timeline_event_id"], name: "index_startup_feedback_on_timeline_event_id"
-  end
-
-  create_table "startups", id: :serial, force: :cascade do |t|
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.string "name"
-    t.integer "level_id"
-    t.datetime "access_ends_at"
-    t.datetime "dropped_out_at"
-    t.index ["level_id"], name: "index_startups_on_level_id"
   end
 
   create_table "submission_reports", force: :cascade do |t|
@@ -641,7 +614,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.boolean "archived", default: false
     t.string "youtube_video_id"
     t.datetime "feedback_asked_at"
-    t.datetime "slack_reminders_sent_at"
     t.string "call_to_action"
     t.text "rubric_description"
     t.boolean "resubmittable", default: true
@@ -789,10 +761,15 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
     t.string "update_email_token"
     t.datetime "update_email_token_sent_at"
     t.string "new_email"
+    t.bigint "organisation_id"
+    t.string "discord_user_id"
+    t.string "discord_tag"
     t.index ["api_token_digest"], name: "index_users_on_api_token_digest", unique: true
     t.index ["delete_account_token_digest"], name: "index_users_on_delete_account_token_digest", unique: true
+    t.index ["discord_user_id"], name: "index_users_on_discord_user_id"
     t.index ["email", "school_id"], name: "index_users_on_email_and_school_id", unique: true
     t.index ["login_token_digest"], name: "index_users_on_login_token_digest", unique: true
+    t.index ["organisation_id"], name: "index_users_on_organisation_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["school_id"], name: "index_users_on_school_id"
   end
@@ -840,12 +817,8 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
   add_foreign_key "domains", "schools"
   add_foreign_key "faculty_cohort_enrollments", "cohorts"
   add_foreign_key "faculty_cohort_enrollments", "faculty"
-  add_foreign_key "faculty_course_enrollments", "courses"
-  add_foreign_key "faculty_course_enrollments", "faculty"
   add_foreign_key "faculty_founder_enrollments", "faculty"
   add_foreign_key "faculty_founder_enrollments", "founders"
-  add_foreign_key "faculty_startup_enrollments", "faculty"
-  add_foreign_key "faculty_startup_enrollments", "startups"
   add_foreign_key "founders", "cohorts"
   add_foreign_key "founders", "levels"
   add_foreign_key "founders", "teams"
@@ -857,6 +830,9 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
   add_foreign_key "leaderboard_entries", "founders"
   add_foreign_key "levels", "courses"
   add_foreign_key "markdown_attachments", "users"
+  add_foreign_key "organisation_admins", "organisations"
+  add_foreign_key "organisation_admins", "users"
+  add_foreign_key "organisations", "schools"
   add_foreign_key "posts", "posts", column: "reply_to_post_id"
   add_foreign_key "posts", "topics"
   add_foreign_key "quiz_questions", "answer_options", column: "correct_answer_id"
@@ -868,7 +844,6 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
   add_foreign_key "school_strings", "schools"
   add_foreign_key "startup_feedback", "faculty"
   add_foreign_key "startup_feedback", "timeline_events"
-  add_foreign_key "startups", "levels"
   add_foreign_key "submission_reports", "timeline_events", column: "submission_id"
   add_foreign_key "target_evaluation_criteria", "evaluation_criteria"
   add_foreign_key "target_evaluation_criteria", "targets"
@@ -882,6 +857,7 @@ ActiveRecord::Schema.define(version: 2022_08_05_063129) do
   add_foreign_key "topics", "communities"
   add_foreign_key "topics", "topic_categories"
   add_foreign_key "topics", "users", column: "locked_by_id"
+  add_foreign_key "users", "organisations"
   add_foreign_key "users", "schools"
   add_foreign_key "webhook_endpoints", "courses"
 end

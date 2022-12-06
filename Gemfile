@@ -1,4 +1,4 @@
-ruby '2.7.6'
+ruby '2.7.7'
 
 source 'https://rubygems.org'
 
@@ -49,9 +49,10 @@ gem 'rack-attack', '~> 6.6' # A rack middleware for throttling and blocking abus
 gem 'webpush', '~> 1.1.0' # Encryption Utilities for Web Push protocol
 gem 'activerecord-nulldb-adapter', '~> 0.8' # A database backend that translates database interactions into no-ops.
 
-# Custom Gems for Fast Alerts
-gem 'hirb', '~> 0.7' # Hirb is a Ruby library that makes it easy to format and display data in a console.
-gem 'better_errors', '~> 2.9' # Better error page for Rack apps.
+# Custom Gems
+gem 'better_errors'
+gem 'hirb'
+gem 'vite_ruby', '~> 3.2'
 
 # OmniAuth providers
 gem 'omniauth-google-oauth2', '~> 1.1' # Oauth2 strategy for Google.

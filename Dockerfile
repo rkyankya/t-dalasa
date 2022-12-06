@@ -1,11 +1,12 @@
 # This is a multi-stage build with two stages, where the first is used to precompile assets.
-FROM ruby:2.7.6
+FROM ruby:2.7.7
 WORKDIR /build
 
 # Begin by installing gems.
 COPY Gemfile .
 COPY Gemfile.lock .
 RUN gem install bundler -v '2.3.16'
+RUN bundle lock --add-platform x86_64-linux
 RUN bundle config set --local deployment true
 RUN bundle config set --local without development test
 RUN bundle install -j4
@@ -35,10 +36,11 @@ ENV DB_ADAPTER="nulldb"
 ENV SECRET_KEY_BASE="1fe25dabb16153b60531917dce0f70e385be7e4f2581e62f10d91a94999de04225b3363b95bbc2b5967902d60be5dc85ae7661f13d325dcdc44dce4b7756c55e"
 
 # AWS requires a lot of keys to initialize.
-ENV AWS_ACCESS_KEY_ID=AKIASMTYY3WTS7MSMLHC
-ENV AWS_SECRET_ACCESS_KEY=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
-ENV AWS_REGION=us-east-2
-ENV AWS_BUCKET=e-dalasa
+ENV RAILS_MASTER_KEY=6676b8264bf8a571ac7effa5897e26eb
+ENV AWS_ACCESS_KEY_ID=dummy_access_key
+ENV AWS_SECRET_ACCESS_KEY=dummy_secret_access_key
+ENV AWS_REGION=us-east-1
+ENV AWS_BUCKET=dummy_bucket_name
 
 # Export the locales.json file.
 RUN bundle exec i18n export
@@ -50,7 +52,7 @@ RUN yarn run re:build
 RUN bundle exec rails assets:precompile
 
 # With precompilation done, we can move onto the final stage.
-FROM ruby:2.7.6-slim-bullseye
+FROM ruby:2.7.7-slim-bullseye
 
 # We'll need a few packages in this image.
 RUN apt-get update && apt-get install -y \

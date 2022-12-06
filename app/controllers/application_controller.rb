@@ -45,7 +45,7 @@ class ApplicationController < ActionController::Base
 
   # Redirect all requests from unknown domains to service homepage.
   rescue_from RequestFromUnknownDomain do
-    redirect_to "https://www.pupilfirst.com?redirect_from=#{current_host}"
+    redirect_to "https://www.test.e-dalasa.com?redirect_from=#{current_host}"
   end
 
   def raise_not_found
@@ -257,8 +257,8 @@ class ApplicationController < ActionController::Base
     return false if current_domain.blank?
 
     return false if current_domain.primary? || current_school.domains.one?
-
-    !current_school.configuration['disable_primary_domain_redirection']
+    !Schools::Configuration.new(current_school)
+      .disable_primary_domain_redirection?
   end
 
   def redirect_to_primary_domain
@@ -271,7 +271,8 @@ class ApplicationController < ActionController::Base
                     user_signed_in? &&
                       (
                         session[:last_seen_at] == nil ||
-                          Time.zone.parse(session[:last_seen_at]) < 15.minutes.ago
+                          Time.zone.parse(session[:last_seen_at]) <
+                            15.minutes.ago
                       )
                   }
 
