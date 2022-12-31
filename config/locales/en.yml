@@ -8,20 +8,20 @@ en:
   cohorts:
     shared:
       overview_link: Overview
-      students_link: Students
+      students_link: Members
     show:
-      distribution_heading: Level-wise student distribution
-      students_completed: Students Completed
-      total_students: Total Students
+      distribution_heading: Level-wise member distribution
+      students_completed: Memebers Completed
+      total_students: Total Memberss
       view_all: View All
     student:
       level_label: Level
       never_signed_in: Has never signed in
       time_ago: Last seen %{time_ago} ago
     students:
-      distribution_heading: Level-wise student distribution
-      nothing_to_show: There are no students matching the selected filters.
-      pagination_notice: Now showing %{page_start}-%{page_end} of a total of %{count} such students.
+      distribution_heading: Level-wise member distribution
+      nothing_to_show: There are no memberss matching the selected filters.
+      pagination_notice: Now showing %{page_start}-%{page_end} of a total of %{count} such members.
   communities:
     show:
       new_topic: New Topic
@@ -43,9 +43,9 @@ en:
         label: Cohort end date
       update_cohort: Update cohort
     AdminCoursesShared__StudentsPicker:
-      all_students_selected: All students selected
-      no_students_found: No Students found
-      no_students_selected: No students selected
+      all_students_selected: All members selected
+      no_students_found: No Members found
+      no_students_selected: No members selected
     AdminCoursesShared__TeamEditor:
       add_new_team: Add new team
       select_cohort:
@@ -73,7 +73,7 @@ en:
       report: Report
       review: Review
       sign_out: Sign Out
-      students: Students
+      students: Members
     ClickToCopy:
       copied: Copied!
       copy: Copy to clipboard
@@ -91,7 +91,7 @@ en:
       button_text: Merge and delete
       edit: Edit
       merge_heading_html: Merge <em>%{cohort_name}</em> into another cohort
-      merge_help: Merging cohorts will move all students from the selected cohort to the target cohort. This action can be used to delete unnecessary cohorts. This action cannot be undone.
+      merge_help: Merging cohorts will move all members from the selected cohort to the target cohort. This action can be used to delete unnecessary cohorts. This action cannot be undone.
       page_description: Actions for the cohort.
       pick_a_cohort: Pick a Cohort
     CohortsCreator__Root:
@@ -117,7 +117,7 @@ en:
         search_by_name: Search by Name
       load_more: Load More
       no_cohorts_found: No Cohorts Found
-      students: Students
+      students: Members
     CommunitiesNewTopic__Root:
       asked_on: "Asked on "
       back: Back
@@ -169,20 +169,20 @@ en:
       topics_partially_loaded_text: Showing %{loaded_topics_count} of %{total_topics} topics
       unable_find_id: "Unable to find topic category with ID: "
     CourseApplicants__EditForm:
-      add_as_student_button: Add as Student
+      add_as_student_button: Add as Member
       affiliation:
         label: Affiliation
         placeholder: Acme Inc., Acme University, etc.
       email:
         label: Email
-        placeholder: Student email here
+        placeholder: Member email here
       name:
         error: is not valid
         label: Name
-        placeholder: Student name here
+        placeholder: Member name here
       notify_students:
-        label: Notify students, and send them a link to sign into this church.
-      page_title: Add as a student
+        label: Notify members, and send them a link to sign into this church.
+      page_title: Add as a member
       tabs:
         actions: Actions
         details: Details
@@ -203,7 +203,7 @@ en:
         label:
           search: Search by name or email
           tag: Tag
-      onboard_as_student: OnBoard as Student
+      onboard_as_student: OnBoard as Member
       show_actions: Show Actions
       show_details: "Show Details: "
       sort_criterion:
@@ -228,7 +228,7 @@ en:
       window_confirm_pre: Are you sure you want to remove
     CourseCertificates__CreateDrawer:
       certificate_base_image:
-        help: This base image must include a full line's space to insert a student's name.
+        help: This base image must include a full line's space to insert a member's name.
         help_url: https://docs.e-dalasa.com/users/certificates#uploading-a-new-certificate
         label: Certificate Base Image
         placeholder: Select a base image for certificate
@@ -239,9 +239,9 @@ en:
       success_notification: You can now edit this certificate.
     CourseCertificates__EditDrawer:
       active:
-        help: While you can have multiple certificates, only one can be automatically issued; it will be issued when a student <em>completes</em> a session.
+        help: While you can have multiple certificates, only one can be automatically issued; it will be issued when a member <em>completes</em> a session.
         help_url: https://docs.e-dalasa.com/users/certificates#automatically-issuing-certificates
-        label: Should students be automatically issued this certificate?
+        label: Should members be automatically issued this certificate?
       cannot_be_auto_issued_warning: Please note that the last level of this session does not have any milestone targets. This certificate will be auto-issued only if the last level has at least one milestone target.
       edit_action: Edit Certificate
       font_size_label: Font Size
@@ -281,17 +281,17 @@ en:
     CourseCoaches__EnrollmentForm:
       add_course: Add Session Pastor
       assign_coaches: ASSIGN PASTORS TO THE SESSION
-      notification_coach_enrollment: Pastor enrollments updated successfully
+      notification_coach_enrollment: Pastor's enrollments updated successfully
       search_coaches_all: You have selected all pastors!
       search_coaches_empty: No pastors selected
-      search_coaches_placeholder: Search pastors
+      search_coaches_placeholder: Search Pastors
       search_cohorts_all: You have selected all cohorts!
       search_cohorts_empty: No cohorts selected
       search_cohorts_placeholder: Search cohorts
       select_coaches: Select Pastors
       select_cohorts: Select Cohorts
     CourseCoaches__InfoForm:
-      no_students_assigned: There are no students assigned to this pastor. You can assign pastors directly while editing the student details.
+      no_students_assigned: There are no members assigned to this pastor. You can assign pastors directly while editing the member details.
       notification_coach_updated: Pastor updated successfully
       pending_submissions: Pending Submissions
       revied_submissions: Reviewed Submissions
@@ -299,7 +299,7 @@ en:
       search_cohorts_empty: No cohorts selected
       search_cohorts_placeholder: Search cohorts
       select_cohorts: "Cohorts assigned to pastor:"
-      students_assigned: "Students assigned to pastor:"
+      students_assigned: "Members assigned to pastor:"
       update_cohort_assignment: Update Cohort Assignment
     CourseCoaches__InfoFormTeam:
       remove_post_confirm: from the list of assigned teams?
@@ -307,9 +307,9 @@ en:
     CourseCoaches__Root:
       coaches_list: List of session pastors
       course_empty: The session has no pastor assigned!
-      enrollment_delete_error_head_notification: Pastor enrollment could not be deleted
+      enrollment_delete_error_head_notification: Pastor's enrollment could not be deleted
       enrollment_delete_error_notification_body: Please try again
-      enrollment_delete_notificaion_success_body: Pastor enrollment deleted successfully
+      enrollment_delete_notificaion_success_body: Pastor's enrollment deleted successfully
       remove_confirm_post: from this session?
       remove_confirm_pre: Are you sure you want to remove
     CourseEditor__Form:
@@ -352,21 +352,21 @@ en:
         help_url: https://docs.e-dalasa.com/users/courses#processing-url
         label: Do you want to process applicant information before enrolling them?
       progression_behavior:
-        help: This only applies if your course has milestone targets that requires students to submit their work for review by pastors.
+        help: This only applies if your course has milestone targets that requires members to submit their work for review by pastors.
         help_url: https://docs.e-dalasa.com/users/courses#progression-behaviour
         label: Progression Behavior
         limited:
           description_end: " without getting submissions reviewed."
-          description_start: Students can level up
+          description_start: Members can level up
           once: once
           thrice: thrice
           title: Limited
           twice: twice
         strict:
-          description: Students can level up only after getting submissions reviewed, and passing.
+          description: Members can level up only after getting submissions reviewed, and passing.
           title: Strict
         unlimited:
-          description: Students can level up till the end of the session, without getting submissions reviewed.
+          description: Members can level up till the end of the session, without getting submissions reviewed.
           title: Unlimited
       tabs:
         actions: Actions
@@ -394,7 +394,7 @@ en:
         updating: Updating...
       cover_image:
         error_message: must be a JPEG / PNG under 2 MB in size
-        help: The cover will be displayed at the top of all student pages within the session, and as the header of some session emails.
+        help: The cover will be displayed at the top of all member pages within the session, and as the header of some session emails.
         help_url: https://docs.e-dalasa.com/users/courses#course-images
         label: Cover Image
       empty_image_label: Please choose an image file.
@@ -417,8 +417,8 @@ en:
         download_reports: Download Reports
         edit_curriculum: Edit Curriculum
         manage_coaches: Manage Pastor
-        manage_students: Manage Students
-        view_as_student: View as Student
+        manage_students: Manage Members
+        view_as_student: View as Member
       courses_fully_loaded_text: Showing all %{total_courses} sessions
       courses_partially_loaded_text: Showing %{loaded_courses_count} of %{total_courses} sessions
       edit_course_details: Edit Session Details
@@ -439,8 +439,8 @@ en:
       quick_links: Quick Links
       view_public_page: View public page
     CourseExport__Root:
-      active_students_label: Active Students
-      all_students_label: All Students
+      active_students_label: Active Members
+      all_students_label: All Members
       all_targets_label: All targets
       close_export_form: Close Export Form
       create_action: Create New Export
@@ -449,11 +449,11 @@ en:
       create_button_text: Create Export
       download_course_export: Download Session Export
       export: Export
-      export_tags_label: Export only students with the following tags
+      export_tags_label: Export only members with the following tags
       export_targets_label: Which targets should the export include?
       export_type_label: Please select the kind of export you need
       heading: Exports
-      include_inactive_students_tag: Included Inactive Students
+      include_inactive_students_tag: Included Inactive Members
       no_exports_notice: You haven't exported anything yet!
       prepared: Prepared
       requested: Requested
@@ -461,8 +461,8 @@ en:
       reviewed_only_targets_label: Only targets with reviewed submissions
       search_tag_placeholder: Search for a tag
       search_tags_empty: No tags selected
-      students_label: Students
-      students_to_include_label: Select the students to include in session export
+      students_label: Members
+      students_to_include_label: Select the members to include in session export
       teams_label: Teams
     CourseSelect:
       button_load_more: Load More Sessions...
@@ -492,7 +492,7 @@ en:
       issued_certificate_heading: Congratulations! You have been issued a certificate.
       level_locked: Level locked
       level_locked_explanation: You can access the content on %{date}.
-      level_locked_for_students_notice: This level is still locked for students and will be unlocked on <strong>%{date}</strong>.
+      level_locked_for_students_notice: This level is still locked for members and will be unlocked on <strong>%{date}</strong>.
       level_locked_notice: The level is currently locked!
       milestone_targets: Milestone targets
       nav_next_level: Next Level
@@ -708,13 +708,13 @@ en:
       evaluated_by: Evaluated By
       feedback: Feedback
       feedback_generated_text: Feedback generated from review checklist.
-      feedback_placeholder: This feedback will be emailed to students when you finish grading.
+      feedback_placeholder: This feedback will be emailed to members when you finish grading.
       get_next_submission:
         notice:
           done: Done!
           done_description: There are no other similar submissions.
       grade_card: Grade Card
-      help_text: Notes can be used to keep track of a %{note_about}'s progress. These notes are shown only to pastors in a student's report. %{additional_help}
+      help_text: Notes can be used to keep track of a %{note_about}'s progress. These notes are shown only to pastors in a member's report. %{additional_help}
       hide_test_report_button: Hide Test Report
       level_acronym: L
       note_help: "Would you like to write a note about this "
@@ -741,16 +741,16 @@ en:
         pending_review: Pending Review
         rejected: Rejected
         reviewing: Reviewing
-      student: student
-      student_dropped_out_message_with_timestamp: This submission is from a student whose access to the session has ended, or has dropped out. You can review the submission until %{timestamp}.
-      student_dropped_out_message_without_timestamp: This submission is from a student whose access to the session has ended, or has dropped out.
-      students_dropped_out_message_with_timestamp: This submission is linked to one or more students whose access to the session has ended, or have dropped out.You can review the submission until %{timestamp}
-      students_dropped_out_message_without_timestamp: This submission is linked to one or more students whose access to the session has ended, or have dropped out.
+      student: member
+      student_dropped_out_message_with_timestamp: This submission is from a member whose access to the session has ended, or has dropped out. You can review the submission until %{timestamp}.
+      student_dropped_out_message_without_timestamp: This submission is from a member whose access to the session has ended, or has dropped out.
+      students_dropped_out_message_with_timestamp: This submission is linked to one or more members whose access to the session has ended, or have dropped out.You can review the submission until %{timestamp}
+      students_dropped_out_message_without_timestamp: This submission is linked to one or more members whose access to the session has ended, or have dropped out.
       submission: Submission
       submitted_by: "Submitted by "
       submitted_by_team: "Submitted by team: "
       team: team
-      team_notice: " This submission is from a team, so a note added here will be posted to the report of all students in the team."
+      team_notice: " This submission is from a team, so a note added here will be posted to the report of all members in the team."
       test_report: Test Report
       undo_grade_warning: Are you sure you want to remove these grades? This will return the submission to a 'Pending Review' state.
       undo_grading: Undo Grading
@@ -767,7 +767,7 @@ en:
       button_load_more: Load More Submissions...
       coach_filter_by:
         assigned_to: Filter by who's assigned to a submission
-        personal_coach: Filter by who's assigned to a student
+        personal_coach: Filter by who's assigned to a member
         reviewed_by: Filter by who reviewed a submission
       filter_by: "Filter by:"
       filter_by_another_level: Filter by another level
@@ -775,20 +775,20 @@ en:
       filter_by_level: Filter by level
       filter_by_level_or_submissions_assigned: Filter by level, or only show submissions assigned to a pastor
       filter_by_target: Filter by target
-      filter_hint: ...or start typing to filter by student using their name or email address
+      filter_hint: ...or start typing to filter by member using their name or email address
       filter_input:
         assigned_to: "Assigned To: "
         level: "Level: "
         personal_coach: "Personal Pastor: "
         reviewed_by: "Reviewed By: "
         target: "Target: "
-      inactive_students: Inactive Students
+      inactive_students: Inactive Members
       include: Include
       level: Level
       me: Me
       name_or_email: Name or Email
       now_showing_submissions_assigned_to: Now showing submissions assigned to %{name}.
-      now_showing_submissions_from_all_students: Now showing submissions from all students in this session.
+      now_showing_submissions_from_all_students: Now showing submissions from all members in this session.
       pending: Pending
       personal_coach: Personal Pastor
       review: Review
@@ -834,38 +834,38 @@ en:
       unknown: Unknown
     CoursesStudents__CoachNotes:
       all_notes: All Notes
-      has_archived_notes: This student has some archived notes.
+      has_archived_notes: This member has some archived notes.
       new_note: Add a New Note
       no_notes: No notes here!
       save_note: Save Note
     CoursesStudents__Root:
       assigned_me: "Assigned to: Me"
       assigned_to: Assigned to
-      coach_notes: Pastor Notes
+      coach_notes: Pastor's Notes
       filter_level: Filter by level, assigned pastor, or search by name or email address, and more...
       has_notes: Has notes
-      level_distribution_label: Level-wise student distribution
+      level_distribution_label: Level-wise member distribution
       me: Me
       name_email: Name or Email
       no_notes: Does not have notes
       not_found: "Could not find level selected from distribution bar, with ID "
-      restore_filer_none: Now showing all students in this session.
+      restore_filer_none: Now showing all members in this session.
       search_assigned_me: " assigned to me"
       search_assigned_to: "assigned to "
       search_no_notes: does not have notes has notes pastor notes
       search_tag: "tag "
-      showing_assigned: "Now showing students assigned to "
+      showing_assigned: "Now showing members assigned to "
       tagged_with: Tagged with
     CoursesStudents__StudentDistribution:
-      level_wise: Students level-wise distribution
-      students_level: Students in level
+      level_wise: Members level-wise distribution
+      students_level: Members in level
     CoursesStudents__StudentOverlay:
-      access_ended_at: This student's access to the session ended on %{date}.
+      access_ended_at: This member's access to the session ended on %{date}.
       average_grades: Average Grades
       average_quiz_score: Average Quiz Score
-      close_student_report: Close student report
+      close_student_report: Close member report
       course_completed: Session Completed!
-      dropped_out_at: This student dropped out of the session on %{date}.
+      dropped_out_at: This member dropped out of the session on %{date}.
       level_progress: Level Progress
       notes: Notes
       other_team_members: Other Team Members
@@ -881,8 +881,8 @@ en:
       total_targets_completed: Total Targets Completed
     CoursesStudents__StudentsList:
       last_seen: Last seen %{time_string}
-      no_last_seen: This student has never signed in
-      no_students: No students to show
+      no_last_seen: This member has never signed in
+      no_students: No members to show
       personal_coaches: Personal Pastors
       team_coaches: Team Pastors
     CoursesStudents__SubmissionsList:
@@ -941,7 +941,7 @@ en:
     CurriculumEditor__ContentEditor:
       last_updated: Last Updated
       not_versioned: Not Versioned
-      view_as_student: View as Student
+      view_as_student: View as Member
     CurriculumEditor__EmbedBlockResolver:
       error_notification: An unexpected error occured, and our team has been notified about this. Please reload the page before trying again.
       trying_embed: Trying to embed URL...
@@ -992,7 +992,7 @@ en:
       delete: Delete
       describe_step: Describe this step
       editor_checklist: Editor for checklist item
-      limits_notice: Students can submit up to 3 files, limited to 5 MB each.
+      limits_notice: Members can submit up to 3 files, limited to 5 MB each.
       move_down: Move Down
       move_up: Move Up
       not_unique_step: Not a unique step; required steps must be unique
@@ -1005,19 +1005,19 @@ en:
       add_step: Add a Step
       choose_target_group: Choose a target group
       completion_instructions:
-        help: Use this to remind the student about something important. These instructions will be displayed close to where students complete the target.
+        help: Use this to remind the member about something important. These instructions will be displayed close to where members complete the target.
         help_url: https://docs.e-dalasa.com/users/curriculum_editor#setting-the-method-of-completion
-        label: Do you have any completion instructions for the student?
+        label: Do you have any completion instructions for the member?
       could_not_find: Could not find selected evaluation criterion with ID
       describe_submission: Describe your submission
-      empty_checklist_warning: This target has no steps. Students will be able to submit target without any action!
+      empty_checklist_warning: This target has no steps. members will be able to submit target without any action!
       enter_valid_link: Enter a valid link
       enter_valid_title: Enter a valid title
       link_complete: Link to complete
       mark_as_complete: Simply mark the target as completed.
       need_submit: " needs to submit."
       no_targets_selected: No targets selected
-      one_student_team: Only one student in a team
+      one_student_team: Only one member in a team
       optional_braces: (optional)
       paste_link_complete: Paste link to complete
       prepare_quiz: Prepare the quiz now.
@@ -1030,18 +1030,18 @@ en:
       select_criterion_label: Choose evaluation criteria from your list
       select_criterion_warning: At least one has to be selected
       selected_all_targets: You have selected all targets
-      submit_individually: All students must submit individually.
+      submit_individually: All members must submit individually.
       take_quiz: Take a quiz to complete the target.
       target_checklist:
-        help: These are the steps that a student must complete to submit work on a target. This information will be shown to the pastor for review.
+        help: These are the steps that a member must complete to submit work on a target. This information will be shown to the Pastor for review.
         help_url: https://docs.e-dalasa.com/users/curriculum_editor#defining-steps-to-complete-a-target
-        label: What steps should the student take to complete this target?
+        label: What steps should the member take to complete this target?
         limit_warning: Maximum allowed checklist items is 25!
       target_group: Target Group
-      target_method_of_completion_label: How do you want the student to complete the target?
-      target_reviewed_by_coach: Will a pastor review submissions on this target?
+      target_method_of_completion_label: How do you want the member to complete the target?
+      target_reviewed_by_coach: Will a Pastor review submissions on this target?
       target_role:
-        help: Should students in a team submit work on a target individually, or together?
+        help: Should members in a team submit work on a target individually, or together?
         help_url: https://docs.e-dalasa.com/users/curriculum_editor#setting-the-method-of-completion
         label: How should teams tackle this target?
       target_title_placeholder: Type target title here
@@ -1111,7 +1111,7 @@ en:
       add_criterion: Add Evaluation Criterion
       create_criterion: Create Criterion
       grade_labels:
-        help: Assign labels for each grade, to reflect in grade cards for students and pastors
+        help: Assign labels for each grade, to reflect in grade cards for members and pastors
         help_url: https://docs.e-dalasa.com/users/evaluation_criteria
         label: Grade and Labels
       important: Important
@@ -1195,16 +1195,16 @@ en:
       coach_created: Pastor created successfully
       coach_email: Pastor email address
       coach_left_q: Has the pastor left the church?
-      coach_name: Pastor Name
-      coach_profile_warn: Since the pastor profile isn't public, this won't be shown anywhere
-      coach_public_q: Should the pastor profile be public?
-      coach_title: Pastor Title/Expertise
+      coach_name: Pastor's Name
+      coach_profile_warn: Since the pastor's profile isn't public, this won't be shown anywhere
+      coach_public_q: Should the pastor's profile be public?
+      coach_title: Pastor's Title/Expertise
       coach_title_error: Must have at least two characters
       coach_update: Update Pastor
       coach_updated: Pastor updated successfully
       connect_link: Connect Link
       connect_link_error: This doesn't look like a valid URL
-      connect_link_placeholder: Student connect request link for the pastor
+      connect_link_placeholder: Members connect request link for the pastor
       email: Email
       email_input_error: Please enter a valid email address
       input_group_error: Must have at least two characters
@@ -1216,13 +1216,13 @@ en:
       add_new_coach: Add New Pastor
       avatar_of: "Avatar of "
     SA_InactiveStudentsPanel:
-      all_students: All Students
-      inactive_students: Inactive Students
+      all_students: All Members
+      inactive_students: Inactive Members
       next: Next
       prev: Prev
-      reactivate_students: Reactivate Students
-      search_empty: No inactive student matches your search criteria.
-      search_placeholder: Search by student or team name or student email...
+      reactivate_students: Reactivate Members
+      search_empty: No inactive member matches your search criteria.
+      search_placeholder: Search by member or team name or member email...
       team: Team
     SchoolAdminNavbar__Root:
       course_nav:
@@ -1230,10 +1230,10 @@ en:
         authors: Authors
         certificates: Certificates
         coaches: Pastors
-        curriculum: Curriculum
+        curriculum: Content
         evaluation_criteria: Evaluation Criteria
         exports: Exports
-        students: Students
+        students: Members
       dashboard: Dashboard
       navbar:
         admins: Admins
@@ -1274,7 +1274,7 @@ en:
       categories_in: Categories in
     SchoolCommunities__Editor:
       add_categories: Add Categories
-      allowed_targets_q: Should students be allowed to discuss targets in this community?
+      allowed_targets_q: Should members be allowed to discuss targets in this community?
       can_add_topic: You can add topic categories after creating this community!
       community_editor: Community Editor
       community_editor_error: is not a valid name
@@ -1283,7 +1283,7 @@ en:
       community_updated_notification: Community updated successfully.
       create_community: Create Community
       edit_categories: Edit Categories
-      give_access: "Give access to students from:"
+      give_access: "Give access to members from:"
       no_topic: There are currently no topic categories in this community!
       note: " Pastors in your church have access to all communities."
       notification_answer_cant_blank: Answer cant be blank
@@ -1418,22 +1418,22 @@ en:
       certificates_label: Session Certificates
       details_certificate: Details of issued certificate
       dropout_student:
-        button: Dropout Student
-        help: Marking a student as dropped out will remove all of their access to the session.
+        button: Dropout Member
+        help: Marking a member as dropped out will remove all of their access to the session.
         help_url: https://docs.e-dalasa.com/users/students#student-actions
-        label: Has this student dropped out?
+        label: Has this member dropped out?
       edit: Edit
       empty_course_certificates_text: This session does not have any certificates to issue.
-      empty_issued_certificates_text: This student has not been issued any certificates.
+      empty_issued_certificates_text: This member has not been issued any certificates.
       issue_certificate_button: Issue Certificate
       issued_by_label: "Issued by:"
       issued_certificates_label: "Issued certificates:"
       issued_date_label: "Issued on:"
-      manage_certificates: Manage student certificates
+      manage_certificates: Manage member certificates
       new_certificate_label: "Issue new certificate:"
-      page_description: Actions for the student
+      page_description: Actions for the member
       re_activate_student:
-        button: Re-Activate Student
+        button: Re-Activate Member
       revoke_certificate_button: Revoke Certificate
       revoke_certificate_confirmation: Are you sure? This action cannot be undone.
       revoked_by_label: "Revoked by:"
@@ -1445,7 +1445,7 @@ en:
         invalid_affiliation: Affiliation has to be less than 250 characters
         invalid_email: Email has to be valid and can't be blank
         invalid_name: Name column can't be blank and should be within 250 characters
-        invalid_tags: Maximum of 5 tags allowed per student with a limit of 50 characters each
+        invalid_tags: Maximum of 5 tags allowed per member with a limit of 50 characters each
         invalid_team_name: Team name has to be less than 50 characters
         invalid_title: Title has to be less than 250 characters
       csv_file_errors:
@@ -1455,20 +1455,20 @@ en:
         invalid_data: The CSV file has invalid data in few cells. Please fix the errors listed below and try again.
         invalid_template: The selected CSV file does not have a valid template
       csv_file_input:
-        help: This file will be used to import students in bulk. Check the sample file for the required format.
+        help: This file will be used to import members in bulk. Check the sample file for the required format.
         help_url: https://docs.e-dalasa.com/users/students#importing-students-in-bulk
         label: CSV Import file
         placeholder: Select CSV file to import
-      drawer_heading: Bulk Import Students
+      drawer_heading: Bulk Import Members
       error_summary_title: "Here is a summary of the errors in the sheet: "
       example_csv_link:
         text: Download an example .csv file
         url: https://docs.e-dalasa.com/files/student_import_sample.csv
-      import_button_text: Import Students
+      import_button_text: Import Members
       more_errors_text: "There are even more errors. Fix the errors in the following rows and upload again: "
-      notify_students_label: Notify students, and send them a link to sign into this church.
-      page_description: Upload the CSV file containing the students you want to add to the session.
-      page_title: Import students
+      notify_students_label: Notify members, and send them a link to sign into this church.
+      page_description: Upload the CSV file containing the members you want to add to the session.
+      page_title: Import members
       pages:
         csv_import: CSV File Import
         manual: Manual
@@ -1476,36 +1476,36 @@ en:
       select_a_cohort: Select a cohort
       success_notification: Import initiated successfully! You will be notified in an email once complete.
       valid_data_message: Data validated successfully!
-      valid_data_summary_text: "Here is a summary of student data in the uploaded sheet: "
+      valid_data_summary_text: "Here is a summary of member data in the uploaded sheet: "
     StudentCourse__Header:
       calendar: Calendar
       curriculum: Curriculum
       leaderboard: Leaderboard
       report: Report
       review: Review
-      students: Students
+      students: Members
       unknown: Unknown
     StudentCreator__CreateForm:
-      added_full_description: All students were created successfully.
-      added_none_description: All the students you tried to add were already a part of this session.
+      added_full_description: All members were created successfully.
+      added_none_description: All the members you tried to add were already a part of this session.
       added_none_title: Nothing Changed
-      added_partial_description: "%{students_added} of %{students_requested} students were added. Remaining students are already a part of the session."
+      added_partial_description: "%{students_added} of %{students_requested} members were added. Remaining members are already a part of the session."
       added_partial_title: Partially Added
-      drawer_heading: Add New Students
-      notify_students_label: Notify students, and send them a link to sign into this church.
+      drawer_heading: Add New Members
+      notify_students_label: Notify members, and send them a link to sign into this church.
       pick_a_cohort: Pick a Cohort
-      reload_add_students: Our team has been notified of this failure. Please reload this page before trying to add students again.
+      reload_add_students: Our team has been notified of this failure. Please reload this page before trying to add members again.
       save_list_button: Save List
       select_a_cohort: Select a cohort
       select_cohort: Select Cohort
-      student_list: Student list
+      student_list: Member list
       team_header_add_more_members: Add more team members!
       team_header_label: TEAM %{team_name}
-      teams_to_add_empty: This list is empty! Add some students using the form above.
-      teams_to_add_label: "These new students will be added to the session:"
+      teams_to_add_empty: This list is empty! Add some members using the form above.
+      teams_to_add_label: "These new members will be added to the session:"
     StudentCreator__Root:
-      page_description: You can add multiple students to a list and add them to session
-      page_title: Add new students
+      page_description: You can add multiple members to a list and add them to session
+      page_title: Add new members
       pages:
         csv_import: CSV File Import
         manual: Manual
@@ -1517,17 +1517,17 @@ en:
       email:
         error:
           invalid: invalid email
-          not_unique: email address not unique for student
+          not_unique: email address not unique for member
         label: Email
-        placeholder: Student email here
+        placeholder: Member email here
       name:
         label: Name
         message: is not valid
-        placeholder: Student name here
+        placeholder: Member name here
       tags:
         label: Tags
       team:
-        help: Students with same team name will be grouped together; this will not affect existing teams in the session.
+        help: Members with same team name will be grouped together; this will not affect existing teams in the session.
         label: Team Name
         placeholder: Avengers, Fantastic Four, etc.
       title:
@@ -1547,9 +1547,9 @@ en:
       search_coaches_empty: No Pastor selected
       search_coaches_placeholder: Search Pastors
       select_a_cohort: Select a cohort
-      student_name_placeholder: Student name here
-      student_updated: Student updated successfully
-      student_updated_moved: Student has been updated, and moved to list of inactive students
+      student_name_placeholder: Member name here
+      student_updated: Member updated successfully
+      student_updated_moved: Member has been updated, and moved to list of inactive members
       tags_applied: Tags applied
       tags_applied_team: Tags applied to team
       tags_applied_user: Tags applied to user
@@ -1557,11 +1557,11 @@ en:
       team_name: Team Name
       team_name_error: Team Name must have at least two characters
       team_name_placeholder: Team name here
-      team_updated_moved: Team has been updated, and moved to list of inactive students
+      team_updated_moved: Team has been updated, and moved to list of inactive members
       title: Title
       title_error: Title must have at least two characters
       title_placeholder: Member, Pastor, CEO, etc.
-      update_student: Update Student
+      update_student: Update Member
     StudentTopNav:
       sign_in: Sign In
       sign_out: Sign Out
@@ -1574,10 +1574,10 @@ en:
       sign_out: Sign Out
       user_controls: Show user controls
     StudentsEditor__Root:
-      button_add_new_students: Add New Students
-      button_all_students: All Students
+      button_add_new_students: Add New Members
+      button_all_students: All Members
       button_bulk_import: Bulk Import
-      button_inactive_students: Inactive Students
+      button_inactive_students: Inactive Members
       group_as_team: Group as Team
       move_out_team: Move out from Team
       sort_criterion_label: "Sort by:"
@@ -1593,35 +1593,35 @@ en:
       affiliation: Affiliation
       affiliation_placeholder: Acme Inc., Acme University, etc.
       email: Email
-      email_not_unique: email address not unique for student
-      email_placeholder: Student email here
+      email_not_unique: email address not unique for member
+      email_placeholder: Member email here
       invalid_email: invalid email
       name: Name
-      name_placeholder: Student name here
+      name_placeholder: Member name here
       tags: Tags
       team_name: Team Name
-      team_name_help: Students with same team name will be grouped together; this will not affect existing teams in the session.
+      team_name_help: Members with same team name will be grouped together; this will not affect existing teams in the session.
       team_name_placeholder: Avengers, Fantastic Four, etc.
       title: Title
       title_placeholder: Member, Pastor, CEO, etc.
     StudentsEditor__TeamsList:
       check_spelling: Make sure the spelling is correct.
       clear_filter: Clear Filter
-      empty_message: No students here.
+      empty_message: No members here.
       level: Level
       load_more: "Load More "
       no_results_found: Sorry, no results found.
       students_fully_loaded_text:
-        one: There's only one student.
-        other: Showing all %{count} students
-      students_partially_loaded_text: Showing %{loaded_students_count} of %{total_students} students
+        one: There's only one member.
+        other: Showing all %{count} members
+      students_partially_loaded_text: Showing %{loaded_students_count} of %{total_students} members
       team: Team
       try_removing_filter: Try removing the search filter options.
     StudentsEditor__UpdateForm:
       actions: Actions
       details: Details
     StudentsIndex__Root:
-      add_new_students: Add New Students
+      add_new_students: Add New Members
       cohort: Cohort
       edit: Edit
       filter:
@@ -1631,16 +1631,16 @@ en:
       level: Level
       load_more: Load More
       pagination:
-        empty_message: No Students Found
+        empty_message: No Members Found
       sorter:
         first_created: First Created
         first_updated: First Updated
         last_created: Last Created
         last_updated: Last Updated
         name: Name
-      student: student
-      students: students
-      title: Students
+      student: member
+      students: members
+      title: Members
     SubmissionChecklistItemShow:
       correct: Correct
       incorrect: Incorrect
@@ -1658,7 +1658,7 @@ en:
     TeamsActions__Root:
       delete: Delete
       delete_team: Delete team
-      delete_team_info: Delete will remove all the students from the team and delete the team
+      delete_team_info: Delete will remove all the members from the team and delete the team
       edit: Edit
       pages:
         actions: Actions
@@ -1773,7 +1773,7 @@ en:
       current_password: Current password
       delete_account: Delete account
       delete_your_account: Delete your account
-      deleting_account_warning: Deleting your user account removes all your data from this church. Replies to posts in communities and feedback to students (if user has a pastor profile) will not be deleted. Admin rights need to be revoked if you are an admin in this church.
+      deleting_account_warning: Deleting your user account removes all your data from this church. Replies to posts in communities and feedback to members (if user has a pastor profile) will not be deleted. Admin rights need to be revoked if you are an admin in this church.
       disable_email_radio: Disable
       displayed_publicly: This information will be displayed publicly so be careful what you share.
       edit_profile: Edit your profile
@@ -1818,14 +1818,14 @@ en:
     UsersDashboard__Root:
       certificates: Certificates
       communities: Communities
-      course_locked_message: Your student profile for this session is locked, and cannot be updated.
+      course_locked_message: Your member profile for this session is locked, and cannot be updated.
       cta:
         access_ended: Preview/Limited Access
         course_ended: Session Ended
         dropped_out: Dropped out
         edit_curriculum: Edit Curriculum
         leaderboard: Leaderboard
-        my_students: My Students
+        my_students: My Members
         review_submissions: Review Submissions
         view_certificate: View Certificate
         view_course: View Session
@@ -1849,7 +1849,7 @@ en:
       cancel: Cancel and return
       description: This certificate was issued to <strong class="whitespace-nowrap">%{name}</strong> on <strong class="whitespace-nowrap">%{issue_date}</strong> for the session <strong>%{course_name}</strong>.
       heading: Congratulations <strong class="whitespace-nowrap">%{name}</strong>!<br/>You've earned it.
-      originally_issued_to: This student's name was updated after the certificate was issued. This certificate was originally issued to <strong>%{name}</strong>.
+      originally_issued_to: This member's name was updated after the certificate was issued. This certificate was originally issued to <strong>%{name}</strong>.
       print_or_save: Print, or save as PDF
       serial_number: Serial No. %{serial}
     WebPushSubscriptionManager:
@@ -1870,17 +1870,17 @@ en:
       privacy_policy: Privacy Policy
       terms_and_conditions: Terms & Conditions
     leaderboard:
-      active_students: Active Students
+      active_students: Active Members
       change: Change
-      inactive_students: Inactive Students
+      inactive_students: Inactive Members
       level: Level
       new_new: New
       no_entries: The leaderboard doesn't have any entries for this period.
-      note_html: This leaderboard shows students <strong>who have improved the most</strong> compared to the previous leaderboard.
+      note_html: This leaderboard shows members <strong>who have improved the most</strong> compared to the previous leaderboard.
       page_title: Enroll in %{course_name}
       rank: Rank
       score: Score
-      student: Student
+      student: Member
     process_application:
       errors: "There were errors with your submission: %{form_errors}"
       sent_mail: We've sent you a verification mail. It should reach you in less than a minute. Click the link in the email to sign up, and get started.
@@ -1973,18 +1973,18 @@ en:
       course_enrollment:
         subject: You have been added as a pastor in %{course_name}
       repeat_rejections_alert:
-        body_html: Please consider going through <a href="%{review_url}">the student's submission</a> to see if there's some feedback you can give to help the student progress.
-        header: A bot has rejected a student's submission %{rejection_count} times in the %{course_name} session.
-        subject: Repeated rejection of a student's submission (%{rejection_count} times)
+        body_html: Please consider going through <a href="%{review_url}">the member's submission</a> to see if there's some feedback you can give to help the member progress.
+        header: A bot has rejected a member's submission %{rejection_count} times in the %{course_name} session.
+        subject: Repeated rejection of a member's submission (%{rejection_count} times)
     course_author:
       addition:
         body:
-          added_author_html: You have been added as an author in the session <strong>%{course_name}</strong>, on %{school_name}. This gives you the ability to use the church administration interface to edit the contents of the session, and to <em>preview</em> the session as a student.
+          added_author_html: You have been added as an author in the session <strong>%{course_name}</strong>, on %{school_name}. This gives you the ability to use the church administration interface to edit the contents of the session, and to <em>preview</em> the session as a member.
           link_to: this link
           use_link_html: Use %{link_to} to sign into %{school_name} and view the session
         subject: You have been added as an author in %{course_name}
     course_enrollement:
-      added_coach_html: You have been added as a pastor in the session <strong>%{course_name}</strong>, on %{school_name}. This gives you the ability to review submissions from students, assign grades, and give them feedback on their work.
+      added_coach_html: You have been added as a pastor in the session <strong>%{course_name}</strong>, on %{school_name}. This gives you the ability to review submissions from members, assign grades, and give them feedback on their work.
     course_export:
       prepared:
         body:
@@ -2023,13 +2023,13 @@ en:
         subject: New School Admin Added
       students_bulk_import_complete:
         body:
-          link_to: view these newly added students in the church administration interface
-          report_attachments: Some of the students you tried to import were already enrolled in the session. These students were ignored during the import. A list of email addresses of such students has been included as an attachment with this email.
-          students_added_html: <b>Students added:</b> %{report_params}
-          students_requested_html: <b>Students requested:</b> %{report_params}
-          summary_import_html: "Your request to import students in <strong>%{course_name}</strong> session, was successfully completed.  Here's a small summary on the import:"
+          link_to: view these newly added members in the church administration interface
+          report_attachments: Some of the members you tried to import were already enrolled in the session. These members were ignored during the import. A list of email addresses of such members has been included as an attachment with this email.
+          students_added_html: <b>Members added:</b> %{report_params}
+          students_requested_html: <b>Members requested:</b> %{report_params}
+          summary_import_html: "Your request to import members in <strong>%{course_name}</strong> session, was successfully completed.  Here's a small summary on the import:"
           view_html: You can %{link_to}.
-        subject: Import of Students Completed
+        subject: Import of Members Completed
     startup:
       feedback_as_email:
         body:
@@ -2043,10 +2043,10 @@ en:
       enrollment:
         body:
           link_to: sign into %{school_name} and start working on this sessopn
-          main_html: You have been enrolled as a student in the session <strong>%{course_name}</strong>, on %{school_name}.
+          main_html: You have been enrolled as a member in the session <strong>%{course_name}</strong>, on %{school_name}.
           sign_html: You can now %{link_to}.
           team: You have also been teamed up with %{team_members}; this means that you will be expected to work together to progress in this session.
-        subject: You have been added as a student in %{school_name}
+        subject: You have been added as a member in %{school_name}
     user:
       account_deletion_notification:
         body:
@@ -2143,7 +2143,7 @@ en:
       eval_crit_notification: Evaluation criterion created successfully!
     create_feedback:
       success_notification:
-        description: Your feedback will be e-mailed to the student.
+        description: Your feedback will be e-mailed to the member.
         title: Feedback Sent
     create_grading:
       evaluation_criteria_error: Cannot grade Submission %{submission_id} without evaluation criteria
@@ -2162,7 +2162,7 @@ en:
       blank_title_error: A title is required
       success_notification: A custom link has been added.
     create_student_from_applicant:
-      success_notification: Student created successfully.
+      success_notification: Member created successfully.
     create_submission:
       blocked_submission_status_error: The status of this target is %{target_status}, so you cannot add a new submission; please reload the page
       invalid_files_attached: Some files attached are invalid
@@ -2187,7 +2187,7 @@ en:
     destroy_team:
       success_notification: Team deleted successfully
     dropout_student:
-      student_updated_notification: Student updated successfully
+      student_updated_notification: Member updated successfully
     export_course_report:
       course_not_found_error: Could not find a session with the given ID
       success_notification: Your export is being processed. We'll notify you as soon as it is ready.
@@ -2211,7 +2211,7 @@ en:
       your_answer: Your Answer
       your_correct_answer: Your Correct Answer
     re_activate_student:
-      success_notification: Student re-activated successfully!
+      success_notification: Member re-activated successfully!
     reassign_reviewer:
       submission_graded_error: You can only assign yourself to pending submissions.
       submission_not_assigned_to_coach: The submission is already assigned to you.
@@ -2257,7 +2257,7 @@ en:
       link_not_found_error: Unable to find link!
       success_notification: Link updated successfully!
     update_student_details:
-      success_notification: Student updated successfully
+      success_notification: Member updated successfully
     update_target:
       checklist_items_exceeded_error: Checklist should not have more than 25 items
       evaluation_criteria_course_error: Evaluation criteria must be from the same session as the target
@@ -2278,17 +2278,17 @@ en:
     index:
       heading: Organisations
     show:
-      active_students_label: Active Students
+      active_students_label: Active Members
       cohorts_subheading: Cohorts
       organisation_label: Organisation
-      students_enrolled_heading: Students enrolled in
+      students_enrolled_heading: Members enrolled in
       students_enrolled_prefix_html:
-        one: <span class="font-semibold text-black">1</span> student enrolled
-        other: <span class="font-semibold text-black">%{count}</span> students enrolled
+        one: <span class="font-semibold text-black">1</span> member enrolled
+        other: <span class="font-semibold text-black">%{count}</span> members enrolled
       students_enrolled_suffix_html:
         one: in <span class="font-semibold text-black">1</span> active cohort
         other: in <span class="font-semibold text-black">%{count}</span> active cohorts
-      total_students_label: Total Students
+      total_students_label: Total Members
     students:
       show:
         average_grades: Average Grades
@@ -2343,7 +2343,7 @@ en:
           rank_up_alt: Rank change up
           rank_up_double_alt: Rank change up double
       report:
-        student_report: Student Report
+        student_report: Member Report
       review:
         review_dashboard: Review Dashboard
       students:
@@ -2386,10 +2386,10 @@ en:
           title: Sign In
   queries:
     delete_certificate_mutator:
-      issued_error: This certificate has been issued to one or more students - it cannot be deleted.
+      issued_error: This certificate has been issued to one or more members - it cannot be deleted.
     issue_certificate_mutator:
       certificate_error: The specified certificate could not be found.
-      issued_error: This student has already been issued a certificate for this session.
+      issued_error: This member has already been issued a certificate for this session.
   schools:
     admins:
       title: Admins
@@ -2410,13 +2410,13 @@ en:
       exports:
         title: Exports
       inactive_students:
-        title: Students
+        title: Members
       index:
         title: Sessions
       mark_teams_active:
         teams_active: Teams marked active successfully!
       students:
-        title: Students
+        title: Members
     customize:
       title: Customization
     faculty:
@@ -2428,9 +2428,9 @@ en:
       coaches: Pastors
       courses: Sessions
       levels: Levels
-      no_submissions: No student submissions yet!
+      no_submissions: No member submissions yet!
       overview: null
-      students: Students
+      students: Members
       submissions_reviewed: submissions reviewed
       title: Overview
   services:
@@ -2441,7 +2441,7 @@ en:
           %{topic_url}
           > %{topic_title}
     team_up:
-      must_be_on_the_same_level: Students must belong to the same level for teaming up
+      must_be_on_the_same_level: Members must belong to the same level for teaming up
   shared:
     _no: "No"
     _yes: "Yes"
@@ -2525,7 +2525,7 @@ en:
     search: Search
     settings: Settings
     sign_out: Sign Out
-    students: Students
+    students: Members
     tag: Tag
     tags: Tags
     target: Target
@@ -2608,7 +2608,7 @@ en:
         email_label: Email
         email_placeholder: john@example.com
         heading: Reset your password
-        image_alt: A student holding a giant key with a reset symbol on it
+        image_alt: A member holding a giant key with a reset symbol on it
         page_title: Reset password
         submit_button: Request password reset
         subtitle: Enter your email for password recovery.
@@ -2637,6 +2637,6 @@ en:
       link_expired: That link has expired or is invalid. Please try again.
   validate_submission_gradable:
     owners_should_be_active:
-      error: Cannot update inactive student submissions.
+      error: Cannot update inactive member submissions.
     submission_should_be_live:
       error: Such a submission does not exist, or it has been archived.
