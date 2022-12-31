@@ -45,7 +45,7 @@ class ApplicationController < ActionController::Base
 
   # Redirect all requests from unknown domains to service homepage.
   rescue_from RequestFromUnknownDomain do
-    redirect_to "https://www.test.e-dalasa.com?redirect_from=#{current_host}"
+    redirect_to "https://www.learn.e-dalasa.com?redirect_from=#{current_host}"
   end
 
   def raise_not_found
