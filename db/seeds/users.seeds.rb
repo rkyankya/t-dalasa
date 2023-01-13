@@ -3,5 +3,5 @@ after 'schools' do
 
   puts 'Seeding users (production, idempotent)'
 
-  school.users.where(email: 'admin@example.com').first_or_create!(name: 'Admin User', title: 'Super Admin')
+  school.users.where(email: 'rkyankya@e-dalasa.com').first_or_create!(name: 'Admin User', title: 'Super Admin')
 end
