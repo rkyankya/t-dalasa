@@ -205,6 +205,10 @@ feature 'Submission review overlay', js: true do
 
       expect(page).to have_text('The submission has been marked as reviewed')
 
+      student = submission_pending.founders.first
+      open_email(student.user.email)
+      expect(current_email).to have_content('grades')
+
       dismiss_notification
 
       expect(page).to have_button('Undo Grading')
@@ -289,6 +293,13 @@ feature 'Submission review overlay', js: true do
       c2_result_1_title = Faker::Lorem.sentence
       c2_result_1_feedback = Faker::Markdown.sandwich(sentences: 3)
 
+      # Checklist item 3
+      checklist_title_3 = "Empty checklist item"
+      c3_result_0_title = "Empty checklist result 1"
+      c3_result_0_feedback = nil
+      c3_result_1_title = "Empty checklist result 2"
+      c3_result_1_feedback = nil
+
       expect(target.review_checklist).to eq([])
       click_button 'Start Review'
       dismiss_notification
@@ -312,6 +323,17 @@ feature 'Submission review overlay', js: true do
         click_button 'Add Result'
         fill_in 'result_11_title', with: c2_result_1_title
         fill_in 'result_11_feedback', with: c2_result_1_feedback
+      end
+
+      click_button 'Add Checklist Item'
+
+      within("div[data-checklist-item='2']") do
+        fill_in 'checklist_2_title', with: checklist_title_3
+        fill_in 'result_20_title', with: c3_result_0_title
+        fill_in 'result_20_feedback', with: c3_result_0_feedback
+        click_button 'Add Result'
+        fill_in 'result_21_title', with: c3_result_1_title
+        fill_in 'result_21_feedback', with: c3_result_1_feedback
       end
 
       click_button 'Save Checklist'
@@ -352,6 +374,27 @@ feature 'Submission review overlay', js: true do
         end
       end
 
+      # Add Additional Feedback for empty checklist result item
+      checkbox_21 = find(:css, "[id$='review-checkbox-21']")
+      expect(page).not_to have_button('Add Additional Feedback')
+      checkbox_21.set(true)
+      expect(checkbox_21).to be_checked
+      expect(page).to have_button('Add Additional Feedback')
+      click_button "Add Additional Feedback"
+      expect(page).to have_field("checklist_2_result_1_text_area", with: '')
+      find("div[data-checklist-item='2']").fill_in 'checklist_2_result_1_text_area', with: "Additional Feedback for empty checklist result item 2"
+      checkbox_21.set(false)
+      expect(page).not_to have_button('Add Additional Feedback')
+
+      checkbox_20 = find(:css, "[id$='review-checkbox-20']")
+      expect(page).not_to have_button('Add Additional Feedback')
+      checkbox_20.set(true)
+      expect(checkbox_20).to be_checked
+      expect(page).to have_button('Add Additional Feedback')
+      click_button "Add Additional Feedback"
+      expect(page).to have_field("checklist_2_result_0_text_area", with: '')
+      find("div[data-checklist-item='2']").fill_in 'checklist_2_result_0_text_area', with: "Additional Feedback for empty checklist result item"
+
       click_button 'Generate Feedback'
 
       expect(page).not_to have_button('Generate Feedback')
@@ -361,6 +404,7 @@ feature 'Submission review overlay', js: true do
         expect(page).to have_content(c1_result_0_feedback)
         expect(page).to have_content(c1_result_1_feedback)
         expect(page).to have_content(c2_result_0_feedback)
+        expect(page).to have_content("Additional Feedback for empty checklist result item")
       end
 
       click_button 'Show Review Checklist'
@@ -370,6 +414,10 @@ feature 'Submission review overlay', js: true do
         within("div[data-result-item='0']") do
           find("button[title='Remove checklist result']").click
         end
+      end
+
+      within("div[data-checklist-item='2']") do
+        find("button[title='Remove checklist item']").click
       end
 
       within("div[data-checklist-item='1']") do
@@ -624,7 +672,7 @@ feature 'Submission review overlay', js: true do
       submission_checklist_choice = {
         'kind' => Target::CHECKLIST_KIND_MULTI_CHOICE,
         'title' => question_3,
-        'result' => answer_3,
+        'result' => [answer_3],
         'status' => TimelineEvent::CHECKLIST_STATUS_NO_ANSWER
       }
       submission_checklist_short_text = {
@@ -730,7 +778,7 @@ feature 'Submission review overlay', js: true do
         {
           'kind' => Target::CHECKLIST_KIND_MULTI_CHOICE,
           'title' => question_3,
-          'result' => answer_3,
+          'result' => [answer_3],
           'status' => TimelineEvent::CHECKLIST_STATUS_FAILED
         },
         submission_checklist_short_text,
