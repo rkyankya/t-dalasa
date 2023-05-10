@@ -190,8 +190,8 @@ en:
     CourseApplicants__EditForm:
       add_as_student_button: Add as Member
       affiliation:
-        label: Affiliation
-        placeholder: Acme Inc., Acme University, etc.
+        label: Mobile Number
+        placeholder: Airtel OR MTN
       email:
         label: Email
         placeholder: Member email here
@@ -1208,8 +1208,8 @@ en:
       partially_loaded_text: Showing %{loaded} of %{total} %{plural_name}
     SA_Coaches_CoachEditor:
       add_coach: Add New Pastor
-      affiliation: Affiliation
-      affiliation_placeholder: Acme Inc., Acme University, etc.
+      affiliation: Mobile Number
+      affiliation_placeholder: Profession
       coach_add: Add Pastor
       coach_created: Pastor created successfully
       coach_email: Pastor email address
@@ -1461,7 +1461,7 @@ en:
       select_certificate_input_label: Select a certificate to issue
     StudentBulkImport__Root:
       csv_data_errors:
-        invalid_affiliation: Affiliation has to be less than 250 characters
+        invalid_affiliation: Mobile Number has to be less than 250 characters
         invalid_email: Email has to be valid and can't be blank
         invalid_name: Name column can't be blank and should be within 250 characters
         invalid_tags: Maximum of 5 tags allowed per member with a limit of 50 characters each
@@ -1531,8 +1531,8 @@ en:
     StudentCreator__StudentInfoForm:
       add_to_list: Add to List
       affiliation:
-        label: Affiliation
-        placeholder: Acme Inc., Acme University, etc.
+        label: Mobile Number
+        placeholder: Airtel OR MTN
       email:
         error:
           invalid: invalid email
@@ -1546,15 +1546,15 @@ en:
       tags:
         label: Tags
       team:
-        help: Members with same team name will be grouped together; this will not affect existing teams in the session.
-        label: Team Name
-        placeholder: Avengers, Fantastic Four, etc.
+        help: Members with same zone name will be grouped together; this will not affect existing teams in the session.
+        label: Zone Name
+        placeholder: Kito, Kirinya, etc.
       title:
         label: Title
         placeholder: Member, Pastor, CEO, etc.
     StudentDetails__Root:
-      affiliation: Affiliation
-      affiliation_placeholder: Acme Inc., Acme University, etc.
+      affiliation: Mobile Number
+      affiliation_placeholder: Airtel OR MTN
       edit: Edit
       name: Name
       pages:
@@ -1573,9 +1573,9 @@ en:
       tags_applied_team: Tags applied to team
       tags_applied_user: Tags applied to user
       team_coaches: Team Pastor
-      team_name: Team Name
-      team_name_error: Team Name must have at least two characters
-      team_name_placeholder: Team name here
+      team_name: Zone Name
+      team_name_error: Zone Name must have at least two characters
+      team_name_placeholder: Zone name here
       team_updated_moved: Team has been updated, and moved to list of inactive members
       title: Title
       title_error: Title must have at least two characters
@@ -1609,8 +1609,8 @@ en:
       filter_input_placeholder: Type name, tag or level
     StudentsEditor__StudentInfoForm:
       add_list: Add to List
-      affiliation: Affiliation
-      affiliation_placeholder: Acme Inc., Acme University, etc.
+      affiliation: Mobile Number
+      affiliation_placeholder: Airtel or MTN
       email: Email
       email_not_unique: email address not unique for member
       email_placeholder: Member email here
@@ -1618,7 +1618,7 @@ en:
       name: Name
       name_placeholder: Member name here
       tags: Tags
-      team_name: Team Name
+      team_name: Zone Name
       team_name_help: Members with same team name will be grouped together; this will not affect existing teams in the session.
       team_name_placeholder: Avengers, Fantastic Four, etc.
       title: Title
@@ -1695,7 +1695,7 @@ en:
       create_team: Create Team
       edit: Edit
       filter:
-        search_by_team_name: Search by Team Name
+        search_by_team_name: Search by Zone Name
       load_more: Load More
       page_title: Teams
       pagination:
@@ -2602,7 +2602,7 @@ en:
     tags: Tags
     target: Target
     team: Team
-    team_name: Team Name
+    team_name: Zone Name
     teams: Teams
     update: Update
     updating: Updating
