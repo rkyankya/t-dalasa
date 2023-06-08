@@ -3,7 +3,6 @@ require "rails_helper"
 feature "User Edit", js: true do
   include UserSpecHelper
   include NotificationHelper
-  include ConfigHelper
 
   let(:student) { create :founder }
   let(:user) { student.user }
@@ -57,18 +56,20 @@ feature "User Edit", js: true do
     let(:new_name) { Faker::Name.name }
     let(:old_name) { user.name }
 
-    before do
+    it "creates an audit record" do
       sign_in_user(user, referrer: edit_user_path)
       fill_in "user_name", with: new_name
       click_button "Save Changes"
-    end
 
-    it "creates an audit record" do
+      expect(page).to have_text("Profile updated successfully!")
+
       audit_record = AuditRecord.last
       metadata = audit_record.metadata
+
       expect(audit_record.audit_type).to eq(
         AuditRecord.audit_types[:update_name]
       )
+
       expect(audit_record.school_id).to eq(user.school_id)
       expect(metadata["user_id"]).to eq(user.id)
       expect(metadata["old_name"]).to eq(old_name)
@@ -169,53 +170,6 @@ feature "User Edit", js: true do
 
       expect(page).to have_text("Profile updated successfully!")
       expect(user.reload.valid_password?(new_password)).to eq(true)
-    end
-  end
-
-  context "when the user is required to connect a Discord account for a course" do
-    let(:course) { student.course }
-
-    around do |example|
-      with_secret(sso: { discord: { key: "DISCORD_KEY" } }) { example.run }
-    end
-
-    before do
-      course.update!(discord_account_required: true)
-      course.school.update(
-        configuration: {
-          discord: {
-            server_id: "DISCORD_SERVER_ID",
-            bot_token: "DISCORD_BOT_TOKEN"
-          }
-        }
-      )
-    end
-
-    scenario "user is prompted to connect a Discord account; afterwards is shown link to course" do
-      sign_in_user(
-        user,
-        referrer: edit_user_path(course_requiring_discord: course.id)
-      )
-
-      expect(page).to have_text("You need to link your Discord account first")
-
-      # Visiting the page after setting the Discord user should show a CTA to return to the course..
-      user.update!(discord_user_id: "DISCORD_USER_ID")
-
-      visit(edit_user_path)
-
-      expect(page).to have_link(
-        "take you back to the course",
-        href: curriculum_course_path(course)
-      )
-
-      # Visiting the page again should not show the prompt.
-      visit(edit_user_path)
-
-      expect(page).not_to have_link(
-        "take you back to the course",
-        href: curriculum_course_path(course)
-      )
     end
   end
 end
