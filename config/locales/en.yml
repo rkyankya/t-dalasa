@@ -102,6 +102,8 @@ en:
       review: Review
       sign_out: Sign Out
       students: Members
+    CalendarsIndex__DatePicker:
+      today: Today
     ClickToCopy:
       copied: Copied!
       copy: Copy to clipboard
@@ -494,6 +496,9 @@ en:
       students_label: Members
       students_to_include_label: Select the members to include in session export
       teams_label: Teams
+      earch_cohort_placeholder: Search for a cohort
+      search_cohorts_empty: No cohorts selected
+      export_cohorts_label: Export only the students in the following cohort(s)
     CourseSelect:
       button_load_more: Load More Sessions...
       courses_fully_loaded_text: Showing all %{total_courses} sessions
@@ -510,6 +515,8 @@ en:
           active: Active
           archived: Archived
           ended: Ended
+    CourseResourcesFilter:
+      filter_resources: Filter Resources
     CoursesApply__Root:
       email_sent_message:
         description: It should reach you in less than a minute. Click the link in the email to sign up, and get started.
@@ -775,7 +782,7 @@ en:
         view_action_button: View Github Action
       grade_card: Grade Card
       help_text: Notes can be used to keep track of a %{note_about}'s progress. These notes are shown only to coaches in a student's report. %{additional_help}
-
+      hide_test_report_button: Hide Test Report
       note_help: "Would you like to write a note about this "
       note_placeholder: Did you notice something while reviewing this submission?
       page_title: "Submission #%{submission_number} | L%{level_number} | %{name}"
@@ -941,6 +948,8 @@ en:
       no_revied_submission: No Reviewed Submission
       submitted_on: "Submitted on "
     CurriculumEditor:
+      hide_archived: Hide Archived
+      show_archived: Show Archived
       create_level: Create Level
       create_target_group: Create target group
       edit_selected_level: Edit selected level
@@ -1250,33 +1259,43 @@ en:
         zero: No %{plural_name} to show
       partially_loaded_text: Showing %{loaded} of %{total} %{plural_name}
     SA_Coaches_CoachEditor:
+      active: Active
       add_coach: Add New Pastor
       affiliation: Mobile Number
       affiliation_placeholder: Profession
+      archived: Archived
       coach_add: Add Pastor
       coach_created: Pastor created successfully
       coach_email: Pastor email address
-      coach_left_q: Has the pastor left the church?
       coach_name: Pastor's Name
       coach_profile_warn: Since the pastor's profile isn't public, this won't be shown anywhere
       coach_public_q: Should the pastor's profile be public?
-      coach_title: Pastor's Title/Expertise
+      coach_status: Coach Status
+      coach_title: Coach Title/Expertise
       coach_title_error: Must have at least two characters
       coach_update: Update Pastor
       coach_updated: Pastor updated successfully
+      coach_visibility: Coach Visibility
       connect_link: Connect Link
       connect_link_error: This doesn't look like a valid URL
       connect_link_placeholder: Members connect request link for the pastor
       email: Email
       email_input_error: Please enter a valid email address
+      exited: Exited
       input_group_error: Must have at least two characters
       name: Name
       replace_avatar: Replace avatar
       title: Title
       upload_avatar: Upload an avatar
     SA_Coaches_SchoolIndex:
+      active_coaches: Active Pastor
       add_new_coach: Add New Pastor
       avatar_of: "Avatar of "
+      coaches: Coaches
+      exited_coaches: Exited Pastors
+      no_active_coaches: Your Church doesn't have active pastors.
+      no_coaches: No Coaches Found
+      no_exited_coaches: Your school doesn't have exited coaches.
     SA_InactiveStudentsPanel:
       all_students: All Members
       inactive_students: Inactive Members
@@ -1340,6 +1359,8 @@ en:
       close_community_editor: Close Community Editor
       unsaved_window_confirm: There are unsaved changes! Are you sure you want to close?
     SchoolCustomize__AgreementsEditor:
+      updating: Updating...
+      update: "Update "
       agreement_body: Body of Agreement
       agreement_placeholder: Leave the agreement body empty to hide the footer link.
       manage: Manage
@@ -1438,6 +1459,8 @@ en:
       social: Social
       social_links_q: Add social media links?
       terms_and_conditions: Terms & Conditions
+    SchoolRouter__CoursesDropdown:
+      select_course: Select Session
     SchoolRouter__Page:
       nav:
         course:
@@ -1870,6 +1893,7 @@ en:
       update_locale: Update settings related to your locale.
       upload_failed: Failed to upload
       you_admin_warning: You are currently an admin of this church. Please delete your admin access to enable account deletion .
+      incorrect_email_for_deletion: Incorrect email
     UserSessionResetPassword:
       confirm_password: Confirm Password
       confirm_password_placeholder: Please re-enter your password
@@ -1994,6 +2018,19 @@ en:
   help:
     show:
       title: Help
+  helpers:
+    page_entries_info:
+      entry:
+        one: entry
+        other: entries
+        zero: entries
+      more_pages:
+        display_entries: Displaying %{entry_name} <b>%{first}&nbsp;-&nbsp;%{last}</b> of <b>%{total}</b> in total
+      one_page:
+        display_entries:
+          one: Displaying <b>1</b> %{entry_name}
+          other: Displaying <b>all %{count}</b> %{entry_name}
+          zero: No %{entry_name} found
   home:
     agreement:
       privacy_policy: Privacy Policy
@@ -2241,6 +2278,12 @@ en:
     create_school_link:
       blank_title_error: A title is required
       success_notification: A custom link has been added.
+    create_students:
+      invalid_emails: One or more of the entries have an invalid email address
+      soft_limit_number: You've hit the soft-limit for number of students in this course
+      unique_emails: Email addresses must be unique
+      invalid_strings: One or more of the entries have invalid strings
+      thousand_students_limit: You can only onboard 1000 students at a time
     create_student_from_applicant:
       success_notification: Member created successfully.
     create_submission:
@@ -2273,6 +2316,7 @@ en:
       course_not_found_error: Could not find a session with the given ID
       success_notification: Your export is being processed. We'll notify you as soon as it is ready.
       tag_not_found_error: Could not find tags with the given IDs
+      cohorts_not_found_error: Could not find cohorts with the given IDs
     initiate_account_deletion:
       check_inbox_notification: Check your inbox for further steps!
       deletion_init_notification: Account Deletion Initiated
@@ -2489,6 +2533,8 @@ en:
     issue_certificate_mutator:
       certificate_error: The specified certificate could not be found.
       issued_error: This member has already been issued a certificate for this session.
+    update_evaluation_criterion_mutator:
+      evaluation_criterion_not_found: "Could not find evaluation criterion with ID %{id}"
   schools:
     admins:
       title: Admins
@@ -2581,6 +2627,7 @@ en:
         title: Pastors
       school_index:
         title: Pastors
+        coach: Pastor
     show:
       coaches: Pastors
       courses: Sessions
@@ -2637,6 +2684,7 @@ en:
     empty: Empty
     fail: Fail
     file_invalid: Please select a file with a size less than 5 MB.
+    filter: Filter
     image_file_invalid: Please select an image (PNG, JPEG, GIF) with a size less than 5 MB, and less than 4096px wide or high.
     invalid_authenticity_token_error: Invalid or missing CSRF token. Please refresh this page before trying to perform that action.
     is: is
@@ -2695,6 +2743,7 @@ en:
     settings: Settings
     sign_out: Sign Out
     students: Members
+    sort_by: Sort by
     tag: Tag
     tags: Tags
     target: Target
