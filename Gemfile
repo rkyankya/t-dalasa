@@ -55,6 +55,8 @@ gem 'octokit', '~> 6.1.1' # A Ruby toolkit for the GitHub API.
 
 # Custom Gems
 gem 'hirb'
+gem 'aws-sdk-ses'
+gem 'aws-sdk'
 
 # OmniAuth providers
 gem "omniauth-google-oauth2", "~> 1.1" # Oauth2 strategy for Google.
@@ -106,7 +108,7 @@ group :development, :test do
   gem "faker", "~> 3.2" # A library for generating fake data such as names, addresses, and phone numbers.
   gem "rspec-rails", "~> 6.0" # RSpec for Rails 5+.
   gem "coderay", "~> 1.1" # Pretty syntax highlighting on rspec failure snippets.
-  gem "pry-rails", "~> 0.3.9" # Pry debugger.
+  # gem "pry-rails", "~> 0.3.9" # Pry debugger.
   gem "webmock", "~> 3.14" # Mocking web requests.
   gem "rubocop", "~> 1.51", require: false # Ruby Style Guide.
   gem "rubocop-rails", "~> 2.19", require: false # A RuboCop extension focused on enforcing Rails best practices and coding conventions.

@@ -147,9 +147,20 @@ Rails.application.configure do
   config.active_storage.service = :amazon
 
   # Postmark
-  config.action_mailer.delivery_method = :postmark
-  config.action_mailer.postmark_settings = {
-    api_token: Rails.application.credentials.postmark_api_token
+  # config.action_mailer.delivery_method = :postmark
+  # config.action_mailer.postmark_settings = {
+  #   api_token: Rails.application.credentials.postmark_api_token
+  # }
+
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address:  Rails.application.credentials.dig(:aws_ses, :address), # AWS SES SMTP endpoint for US East (N. Virginia) region
+    port: 587,
+    domain: ENV['ASSET_HOST'], # Replace with your actual domain
+    user_name: Rails.application.credentials.dig(:aws_ses, :username), # Replace with your AWS SES SMTP username
+    password: Rails.application.credentials.dig(:aws_ses, :password), # Replace with your AWS SES SMTP password
+    authentication: :login,
+    enable_starttls_auto: true
   }
 
   # Add the rack-cors middleware to serve CORS header for static assets
